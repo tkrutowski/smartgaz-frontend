@@ -46,27 +46,36 @@ const items = ref([
   },
   {
     label: "Finanse",
-    icon: "pi pi-fw pi-euro",
-    disabled: true,
+    icon: "pi pi-fw pi-money-bill",
+    disabled: !authorizationStore.hasAccessDobranockaInvoice,
     items: [
       {
         label: "Nowa faktura",
         icon: "pi pi-fw pi-file",
-        // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
         command: () => {
-          // router.push({
-          //   name: "Invoice",
-          //   params: { isEdit: "false", invoiceId: 0 },
-          // });
+          router.push({
+            name: "Invoice",
+            params: { isEdit: "false", invoiceId: 0 },
+          });
         },
       },
       {
         label: "Lista faktur",
         icon: "pi pi-fw pi-list",
-        // to: { name: "Invoices" },
-        // command: () => {
-        //   router.push({ name: "Invoices" });
-        // },
+        command: () => {
+          router.push({ name: "Invoices" });
+        },
+      },
+      {
+        separator: true
+      },
+      {
+        label: "Dane firmy",
+        icon: "pi pi-fw pi-building",
+        disabled: !authorizationStore.hasAccessDobranockaCompany,
+        command: () => {
+          router.push({ name: "Company" });
+        },
       },
     ],
   },

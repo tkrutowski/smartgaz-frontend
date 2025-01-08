@@ -67,21 +67,29 @@ async function newCustomer() {
         life: 3000,
       });
       setTimeout(() => {
+        btnSaveDisabled.value = false;
         router.push({name: "Customers"});
       }, 2000);
     }).catch((reason: AxiosError) => {
-      toast.add({
-        severity: "error",
-        summary: reason.message,
-        detail: "Błąd podczas dodawania klienta.",
-        life: 3000,
-      });
-    }).finally(() => {
       btnSaveDisabled.value = false
+      if (reason.response?.status === 409) {
+        toast.add({
+          severity: 'warn',
+          summary: reason.message,
+          detail: 'Klient o tym numerze NIP już istnieje w bazie danych.',
+          life: 5000,
+        })
+      } else {
+        toast.add({
+          severity: "error",
+          summary: reason.message,
+          detail: "Błąd podczas dodawania klienta.",
+          life: 3000,
+        });
+      }
+    }).finally(() => {
       btnShowBusy.value = false;
     })
-
-    btnSaveDisabled.value = false;
     submitted.value = false;
   }
 }
@@ -106,6 +114,7 @@ async function editCustomer() {
             life: 3000,
           });
           setTimeout(() => {
+          btnSaveDisabled.value = false
             router.push({name: "Customers"});
           }, 3000);
         }).catch((reason: AxiosError) => {
@@ -116,10 +125,10 @@ async function editCustomer() {
             life: 3000,
           });
         }).finally(() => {
-          btnSaveDisabled.value = false
           btnShowBusy.value = false;
         })
   }
+  submitted.value = false;
 }
 
 

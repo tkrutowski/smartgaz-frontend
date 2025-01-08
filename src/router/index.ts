@@ -15,6 +15,9 @@ import DobranockaHomeView from "../views/dobranocka/DobranockaHomeView.vue";
 import CustomerView from "../views/dobranocka/CustomerView.vue"
 import CustomersView from "../views/dobranocka/CustomersView.vue"
 import Error403View from "../views/Error403View.vue";
+import InvoicesView from "../views/dobranocka/InvoicesView.vue";
+import InvoiceView from "../views/dobranocka/InvoiceView.vue";
+import CompanyDetailsView from "../views/dobranocka/CompanyDetailsView.vue";
 
 const routes = [
   {
@@ -70,6 +73,24 @@ const routes = [
     name: 'Customer',
     component: CustomerView,
     props: true,
+  },
+  //---------------------------------------------- DOBRANOCKA_INVOICE--------------------------------------------
+  {
+    path: '/dobranocka/invoice/all',
+    name: 'Invoices',
+    component: InvoicesView,
+  },
+  {
+    path: '/dobranocka/invoice/:isEdit/:invoiceId',
+    name: 'Invoice',
+    component: InvoiceView,
+    props: true,
+  },
+  //---------------------------------------------- DOBRANOCKA_COMPANY--------------------------------------------
+  {
+    path: '/dobranocka/company',
+    name: 'Company',
+    component: CompanyDetailsView,
   },
 ]
 

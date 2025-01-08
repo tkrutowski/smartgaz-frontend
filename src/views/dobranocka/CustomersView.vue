@@ -145,7 +145,7 @@ onUnmounted(() => {
   <Panel class="my-5 mx-2">
     <template #header>
       <div class="w-full flex justify-center gap-4">
-        <p class="text-center text-lg">LISTA KLIENTÓW</p>
+        <p class="text-center text-xl md:text-2xl">LISTA KLIENTÓW</p>
         <div v-if="customerStore.loadingCustomer">
           <ProgressSpinner
               class="ml-3"
@@ -212,9 +212,9 @@ onUnmounted(() => {
       </template>
 
       <template #empty>
-        <h4 v-if="!customerStore.loadingCustomer" class="text-red-500 text-lg">
+        <p v-if="!customerStore.loadingCustomer" class="text-red-500 text-lg">
           Nie znaleziono klientów...
-        </h4>
+        </p>
       </template>
 
       <template #loading>

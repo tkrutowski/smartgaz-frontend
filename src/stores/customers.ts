@@ -4,7 +4,6 @@ import type {Customer} from "../types/Customer";
 
 export const useCustomerStore = defineStore("customer", {
     state: () => ({
-        loginError: false,
         loadingCustomer: false,
         rowsPerPage: parseInt(localStorage.getItem('rowsPerPageDobranockaCustomer') || '20', 10),
         customers: [] as Customer[],
@@ -22,12 +21,13 @@ export const useCustomerStore = defineStore("customer", {
     //actions = metody w komponentach
     actions: {
         async refreshCustomers() {
-            this.customers = await this.getCustomersFromDb()
+            if (!this.loadingCustomer)
+                this.customers = await this.getCustomersFromDb()
         },
         getCustomerById(id: number): Customer | null {
-                const customer = this.customers.find((customer) => customer.id === id);
-                if (customer) return customer
-                else return null
+            const customer = this.customers.find((customer) => customer.id === id);
+            if (customer) return customer
+            else return null
         },
         //-----------------------------------------------------------DATABASE------------------------------------------
         //

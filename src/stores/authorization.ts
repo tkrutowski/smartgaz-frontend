@@ -100,6 +100,43 @@ export const useAuthorizationStore = defineStore('authorization', {
                 return false
             }
         },
+        hasAccessDobranockaInvoice(): boolean {
+            console.log('hasAccessDobranockaInvoice()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('ROLE_DOBRANOCKA_INVOICE') || decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessDobranockaInvoice() ERROR', error)
+                return false
+            }
+        },
+        hasAccessDobranockaCompany(): boolean {
+            console.log('hasAccessDobranockaCompany()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('ROLE_DOBRANOCKA_COMPANY') || decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessDobranockaCompany' +
+                    '() ERROR', error)
+                return false
+            }
+        },
     },
 
     //actions = metody w komponentach
@@ -178,5 +215,7 @@ export const useAuthorizationStore = defineStore('authorization', {
             console.log('START - testPing()')
             return await httpCommon.get('/v1/auth/test')
         },
+
+
     },
 })

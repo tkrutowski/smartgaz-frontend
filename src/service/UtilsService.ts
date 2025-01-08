@@ -42,4 +42,38 @@ export const UtilsService = {
         return matchedElements
     },
 
+    isPositiveInteger (value: string)  {
+        // console.log('isPositiveInteger',value)
+        let str = String(value);
+        if (!str) {
+            return false;
+        }
+        str = str.replace(/^0+/, '') || '0';
+        const n = Math.floor(Number(str));
+        return n !== Infinity && String(n) === str && n >= 0;
+    },
+
+    isPositiveFloat(value: string): boolean {
+    // console.log('isPositiveFloat', value);
+    let str: string = String(value);
+    str = str.trim();
+    if (!str) {
+        return false;
+    }
+    const num: number = Number(str);
+    return !isNaN(num) && num > 0 && str === String(num);
+},
+
+    mapVatToEnum(vat: { viewValue: string; numberValue: number; multiplier: number }): string {
+    if (!vat) {
+        return "VAT_0"; // Domyślna wartość, jeśli `vat` jest null lub undefined
+    }
+
+    if (vat.viewValue === "8%") return "VAT_8";
+    if (vat.viewValue === "23%") return "VAT_23";
+
+    // Dodaj inne mapowania w zależności od wymagań
+    return "VAT_0"; // Domyślna wartość
+}
+
 }

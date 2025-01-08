@@ -4,9 +4,6 @@ import type {User, Role, Privilege} from '../types/User'
 
 export const useUsersStore = defineStore('user', {
     state: () => ({
-        loginError: false,
-        btnDisabled: false,
-        busyIcon: false,
         loadingUsers: false,
         loadingPrivileges: false,
         loadingRoles: false,

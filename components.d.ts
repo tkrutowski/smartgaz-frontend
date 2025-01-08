@@ -13,6 +13,7 @@ declare module 'vue' {
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
     Column: typeof import('primevue/column')['default']
+    ColumnGroup: typeof import('primevue/columngroup')['default']
     ConfirmationDialog: typeof import('./src/components/ConfirmationDialog.vue')['default']
     CustomDatePicker: typeof import('./src/components/CustomDatePicker.vue')['default']
     DataTable: typeof import('primevue/datatable')['default']
@@ -22,6 +23,8 @@ declare module 'vue' {
     IconField: typeof import('primevue/iconfield')['default']
     ImageButton: typeof import('./src/components/ImageButton.vue')['default']
     InputIcon: typeof import('primevue/inputicon')['default']
+    InputMask: typeof import('primevue/inputmask')['default']
+    InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
     Menubar: typeof import('primevue/menubar')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
@@ -33,6 +36,7 @@ declare module 'vue' {
     RefreshComponent: typeof import('./src/components/RefreshComponent.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Row: typeof import('primevue/row')['default']
     Select: typeof import('primevue/select')['default']
     StatusButton: typeof import('./src/components/StatusButton.vue')['default']
     Textarea: typeof import('primevue/textarea')['default']
@@ -40,6 +44,7 @@ declare module 'vue' {
     TheMenu: typeof import('./src/components/TheMenu.vue')['default']
     TheMenuDobranocka: typeof import('./src/components/dobranocka/TheMenuDobranocka.vue')['default']
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
+    Toast: typeof import('primevue/toast')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
   }
 }
