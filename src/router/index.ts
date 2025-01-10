@@ -18,6 +18,8 @@ import Error403View from "../views/Error403View.vue";
 import InvoicesView from "../views/dobranocka/InvoicesView.vue";
 import InvoiceView from "../views/dobranocka/InvoiceView.vue";
 import CompanyDetailsView from "../views/dobranocka/CompanyDetailsView.vue";
+import RoomsView from "../views/dobranocka/RoomsView.vue";
+import RoomView from "../views/dobranocka/RoomView.vue";
 
 const routes = [
   {
@@ -91,6 +93,18 @@ const routes = [
     path: '/dobranocka/company',
     name: 'Company',
     component: CompanyDetailsView,
+  },
+  //----------------------------------------------RENT--------------------------------------------
+  {
+    path: '/dobranocka/room/all',
+    name: 'Rooms',
+    component: RoomsView,
+  },
+  {
+    path: '/dobranocka/room/:isEdit/:roomId',
+    name: 'Room',
+    component: RoomView,
+    props: true,
   },
 ]
 

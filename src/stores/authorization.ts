@@ -137,6 +137,25 @@ export const useAuthorizationStore = defineStore('authorization', {
                 return false
             }
         },
+        hasAccessDobranockaRoom(): boolean {
+            console.log('hasAccessDobranockaRoom()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('ROLE_DOBRANOCKA_ROOM') || decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessDobranockaRoom' +
+                    '() ERROR', error)
+                return false
+            }
+        },
     },
 
     //actions = metody w komponentach

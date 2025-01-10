@@ -79,6 +79,61 @@ const items = ref([
       },
     ],
   },
+  {
+    label: 'Wynajem',
+    icon: 'pi pi-home',
+    disabled: !authorizationStore.hasAccessDobranockaRoom,
+    items: [
+      {
+        label: 'Nowy pokój',
+        icon: 'pi pi-plus',
+        disabled: !authorizationStore.hasAccessDobranockaRoom,
+        command: () => {
+          router.push({
+            name: 'Room',
+            params: {isEdit: 'false', roomId: 0},
+          })
+        },
+      },
+      {
+        label: 'Lista pokoi',
+        icon: 'pi pi-fw pi-list',
+        disabled: !authorizationStore.hasAccessDobranockaRoom,
+        command: () => {
+          router.push({name: 'Rooms'})
+        },
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'Rezerwacje',
+        icon: 'pi pi-desktop',
+        // disabled: !authorizationStore.hasAccessDevice,
+        items: [
+          {
+            label: 'Nowa rezerwacja',
+            icon: 'pi pi-plus',
+            // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
+            command: () => {
+              router.push({
+                name: 'Device',
+                params: {isEdit: 'false', deviceId: 0},
+              })
+            },
+          },
+          {
+            label: 'Kalendarz',
+            icon: 'pi pi-fw pi-list',
+            // to: { name: "Invoices" },
+            command: () => {
+              router.push({name: 'Devices'})
+            },
+          },
+        ],
+      },
+    ],
+  },
 ])
 </script>
 

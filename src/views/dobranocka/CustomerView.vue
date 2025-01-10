@@ -242,15 +242,6 @@ const showErrorPhone = () => {
 
 <template>
   <TheMenuDobranocka/>
-  {{showErrorFirstName() }}
-{{showErrorName() }}
-{{showErrorNip() }}
-{{showErrorRegon() }}
-{{showErrorStreet()}}
-{{showErrorZip() }}
-{{showErrorCity() }}
-{{showErrorMail()}}
-{{showErrorPhone()}}XXX{{isNotValid()}}
   <div class="m-4 max-w-6xl mx-auto">
     <form
         class="col-12 col-md-9 col-xl-6 align-self-center"
