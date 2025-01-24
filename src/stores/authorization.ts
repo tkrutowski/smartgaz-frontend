@@ -156,6 +156,44 @@ export const useAuthorizationStore = defineStore('authorization', {
                 return false
             }
         },
+        hasAccessDobranockaReservation(): boolean {
+            console.log('hasAccessDobranockaReservation()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('ROLE_DOBRANOCKA_RESERVATION') || decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessDobranockaReservation' +
+                    '() ERROR', error)
+                return false
+            }
+        },
+        hasAccessDobranockaCalendar(): boolean {
+            console.log('hasAccessDobranockaCalendar()')
+            try {
+                if (this.accessToken) {
+                    // console.log("token : ", this.token);
+                    const decoded = jwt_decode<CustomJwtPayload>(this.accessToken)
+                    // console.log("token decoded: ", decoded);
+                    return (
+                        decoded.authorities.includes('ROLE_DOBRANOCKA_CALENDAR') || decoded.authorities.includes('ROLE_ADMIN')
+                    )
+                } else {
+                    return false
+                }
+            } catch (error) {
+                console.log('hasAccessDobranockaCalendar' +
+                    '() ERROR', error)
+                return false
+            }
+        },
     },
 
     //actions = metody w komponentach

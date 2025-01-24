@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type {StatusType} from '../types/StatusType'
+import type {StatusType} from '../types/CommonTypes.ts'
 
 defineProps({
   btnType: {
     //dodanie typu
-    type: String as () => StatusType,
+    type: String as () => keyof typeof StatusType,
     required: true,
   },
   colorIcon: {

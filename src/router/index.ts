@@ -20,6 +20,8 @@ import InvoiceView from "../views/dobranocka/InvoiceView.vue";
 import CompanyDetailsView from "../views/dobranocka/CompanyDetailsView.vue";
 import RoomsView from "../views/dobranocka/RoomsView.vue";
 import RoomView from "../views/dobranocka/RoomView.vue";
+import ReservationSearchView from "../views/dobranocka/ReservationSearchView.vue";
+import ReservationsView from "../views/dobranocka/ReservationsView.vue";
 
 const routes = [
   {
@@ -105,6 +107,16 @@ const routes = [
     name: 'Room',
     component: RoomView,
     props: true,
+  },
+  {
+    path: '/dobranocka/reservation/search',
+    name: 'ReservationSearch',
+    component: ReservationSearchView,
+  },
+  {
+    path: '/dobranocka/reservation/all',
+    name: 'Reservations',
+    component: ReservationsView,
   },
 ]
 

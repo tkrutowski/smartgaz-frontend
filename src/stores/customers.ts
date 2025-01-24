@@ -13,7 +13,7 @@ export const useCustomerStore = defineStore("customer", {
     getters: {
         getCustomerNames: (state) => {
             return state.customers.map(
-                (customer) => customer.firstName + " " + customer.name
+                (cust: Customer) => cust.name + " " + cust.firstName
             );
         },
     },
@@ -24,8 +24,16 @@ export const useCustomerStore = defineStore("customer", {
             if (!this.loadingCustomer)
                 this.customers = await this.getCustomersFromDb()
         },
+        async getCustomers() {
+            console.log('START - getCustomers()')
+            if (this.customers.length === 0 && !this.loadingCustomer) {
+                await this.refreshCustomers()
+            }
+            console.log('END - getCustomers()')
+            return this.customers
+        },
         getCustomerById(id: number): Customer | null {
-            const customer = this.customers.find((customer) => customer.id === id);
+            const customer = this.customers.find((cust: Customer) => cust.id === id);
             if (customer) return customer
             else return null
         },

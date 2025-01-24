@@ -37,9 +37,9 @@ const submitDelete = async () => {
     }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas usuwania pokoju: ' + roomToRemove.value?.name,
-        life: 3000,
+        summary: 'Błąd podczas usuwania pokoju: ' + roomToRemove.value?.name,
+        detail: reason.response.data.message,
+        life: 5000,
       })
     })
   }
@@ -57,7 +57,7 @@ const submitDelete = async () => {
   />
   <div class="flex flex-col md:flex-row flex-wrap justify-center p-2 gap-4">
     <div v-for="room in roomStore.rooms" :key="room.id">
-      <RoomDisplay class="" :room="room" @delete="confirmDelete"/>
+      <RoomDisplay class="md:max-w-[335px]" :room="room" @delete="confirmDelete"/>
     </div>
   </div>
 

@@ -1,24 +1,24 @@
+import type {Customer} from "./Customer.ts";
 
 export interface Invoice {
   idInvoice: number;
-  idCustomer: number;
+  customer: Customer | null;
   invoiceNumber: string;
   sellDate: Date | null;
   invoiceDate:  Date | null;
   paymentDate:  Date | null;
-  paymentDeadline: number;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   otherInfo: string;
   invoiceItems: InvoiceItem[];
 }
-// export default Invoice
+
 export interface InvoiceItem {
   id: number;
   idInvoice: number;
   name: string;
   pkwiu: string;
-  jm: string;
+  unit: string;
   quantity: number;
   amount: number;
   vat: Vat
@@ -38,15 +38,18 @@ export interface InvoiceDto {
   invoiceItems: InvoiceItem[];
 }
 
-type Status = 'PAID' | 'TO_PAY' | 'OVER_DUE'
-export interface PaymentStatus {
-  name: Status
-  viewName: string
+
+export enum PaymentStatus {
+  PAID = "Spłacony",
+  TO_PAY = "Do zapłaty",
+  OVER_DUE = "Przeterminowany",
+  ALL = "Wszystkie"
 }
 
-export interface PaymentMethod {
-  name: string
-  viewName: string
+export enum PaymentMethod {
+  CASH = "gotówka",
+  CASH_LATE = "gotówka terminowa",
+  TRANSFER = "przelew",
 }
 
 export interface Vat {

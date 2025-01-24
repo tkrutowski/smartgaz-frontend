@@ -10,6 +10,12 @@ import ConfirmationService from 'primevue/confirmationservice'
 import DialogService from 'primevue/dialogservice'
 import ToastService from 'primevue/toastservice'
 import {createPinia} from "pinia";
+// import {FilterService} from 'primevue/api';
+//
+// FilterService.filters.customFilter = (rowValue, filterValue) => {
+//     console.log(rowValue, filterValue);
+//     return rowValue?.id === filterValue?.id;
+// };
 
 declare module 'pinia' {
     export interface PiniaCustomProperties {

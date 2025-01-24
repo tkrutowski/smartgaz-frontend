@@ -8,8 +8,11 @@ import router from "../../router";
 import type {AxiosError} from "axios";
 import OfficeIconButton from "../../components/OfficeIconButton.vue";
 import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import type {BedType, Room} from "../../types/Room.ts";
+import type {Bed, Room} from "../../types/Room.ts";
+import {BedStatus, BedType} from "../../types/Room.ts";
 import {UtilsService} from "../../service/UtilsService.ts";
+import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const roomStore = useRoomStore();
 const route = useRoute();
@@ -18,21 +21,23 @@ const toast = useToast();
 const room = ref<Room>({
   id: 0,
   name: "",
-  color: "",
+  color: "fa0505",
   beds: [],
-  price: 0,
   info: "",
 });
 
-const singleBed = ref<number>(0)
-const doubleBed = ref<number>(0)
-const isBedChange = ref<boolean>(false)
+const bed = ref<Bed>({
+  id: 0,
+  name: "",
+  type: BedType.SINGLE,
+  status: BedStatus.AVAILABLE,
+  priceDay: 35,
+  priceMonth: 700,
+});
+
+
 const btnSaveDisabled = ref<boolean>(false);
 const btnShowBusy = ref<boolean>(false);
-
-watch([singleBed, doubleBed], () => {
-  isBedChange.value = true;
-});
 
 const isSaveBtnDisabled = computed(() => {
   return (
@@ -62,8 +67,6 @@ async function newRoom() {
   } else {
     btnSaveDisabled.value = true;
     btnShowBusy.value = true;
-    if (singleBed.value > 0) addBedToList("SINGLE", singleBed.value)
-    if (doubleBed.value > 0) addBedToList("DOUBLE", doubleBed.value)
     await roomStore.addRoomDb(room.value).then(() => {
       toast.add({
         severity: "success",
@@ -87,9 +90,9 @@ async function newRoom() {
       } else {
         toast.add({
           severity: "error",
-          summary: reason.message,
-          detail: "Błąd podczas dodawania pokoju.",
-          life: 3000,
+          summary: "Błąd podczas dodawania pokoju.",
+          detail: reason.message,
+          life: 5000,
         });
       }
     }).finally(() => {
@@ -99,10 +102,18 @@ async function newRoom() {
   }
 }
 
-function addBedToList(type: BedType, quantity: number) {
-  for (let i = 0; i < quantity; i++) {
-    room.value.beds.push(type)
-  }
+//
+// ---------------------------------------------------------NEW BED---------------------------------------
+//
+function newBed() {
+  console.log('new bed')
+  bed.value.name = "nazwa";
+  bed.value.type = BedType.SINGLE;
+  bed.value.status = BedStatus.AVAILABLE;
+  bed.value.priceDay = 35;
+  bed.value.priceMonth = 700;
+
+  room.value.beds.push({...bed.value})
 }
 
 //
@@ -116,11 +127,6 @@ async function editRoom() {
   } else {
     btnSaveDisabled.value = true;
     btnShowBusy.value = true;
-    if (isBedChange.value) {
-      room.value.beds = []
-      if (singleBed.value > 0) addBedToList("SINGLE", singleBed.value)
-      if (doubleBed.value > 0) addBedToList("DOUBLE", doubleBed.value)
-    }
     await roomStore.updateRoomDb(room.value)
         .then(() => {
           toast.add({
@@ -134,11 +140,12 @@ async function editRoom() {
             router.push({name: "Rooms"});
           }, 3000);
         }).catch((reason: AxiosError) => {
+          btnSaveDisabled.value = false
           toast.add({
             severity: "error",
-            summary: reason.message,
-            detail: "Błąd podczas edycji pokoju.",
-            life: 3000,
+            summary: "Błąd podczas edycji pokoju.",
+            detail: reason.response.data.message,
+            life: 5000,
           });
         }).finally(() => {
           btnShowBusy.value = false;
@@ -146,6 +153,54 @@ async function editRoom() {
   }
   submitted.value = false;
 }
+
+const onCellEditComplete = (event: DataTableCellEditCompleteEvent) => {
+  let {data, newValue, field, originalEvent} = event;
+
+  switch (field) {
+    case 'priceDay':
+    case 'priceMonth':
+      if (UtilsService.isPositiveFloat(newValue)) data[field] = newValue;
+      else originalEvent.preventDefault();
+      break;
+    case 'vat':
+      data[field] = newValue;
+      break;
+
+    default:
+      if (newValue.trim().length > 0) data[field] = newValue;
+      else originalEvent.preventDefault();
+      break;
+  }
+};
+//
+//------------------------------------------DELETE BED MODAL----------------------------------------------
+//
+const showDeleteConfirmationDialog = ref<boolean>(false);
+const bedDeleteItemIndex = ref<number>(-1);
+const confirmDeleteItem = (item: Bed, index: number) => {
+  console.log("confirmDelete",item, index)
+  bed.value = item;
+  bedDeleteItemIndex.value = index;
+  showDeleteConfirmationDialog.value = true;
+};
+
+const deleteConfirmationMessage = computed(() => {
+  if (bed.value)
+    return `Czy chcesz usunąc łóżko <b>${bed.value.name}</b>?`;
+  return "No message";
+});
+
+
+const submitDelete = async () => {
+  console.log("submitDelete()",bedDeleteItemIndex.value, room.value.beds);
+  if (room.value) {
+    if (bedDeleteItemIndex.value !== -1)
+      room.value.beds.splice(bedDeleteItemIndex.value, 1);
+  }
+  showDeleteConfirmationDialog.value = false;
+};
+
 
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
@@ -164,8 +219,6 @@ onMounted(async () => {
         .then((data: Room | null) => {
           if (data) {
             room.value = data;
-            singleBed.value = room.value.beds.filter((typ: BedType) => typ === "SINGLE").length
-            doubleBed.value = room.value.beds.filter((typ: BedType) => typ === "DOUBLE").length
           }
         })
         .catch((error: AxiosError) => {
@@ -185,7 +238,7 @@ const showError = (msg: string) => {
     severity: "error",
     summary: "Error Message",
     detail: msg,
-    life: 3000,
+    life: 5000,
   });
 };
 const isNotValid = () => {
@@ -205,6 +258,13 @@ const showErrorPrice = () => {
 
 <template>
   <TheMenuDobranocka/>
+  <ConfirmationDialog
+      v-model:visible="showDeleteConfirmationDialog"
+      :msg="deleteConfirmationMessage"
+      label="Usuń"
+      @save="submitDelete"
+      @cancel="showDeleteConfirmationDialog = false"
+  />
   <div class="m-4 max-w-6xl mx-auto">
     <form
         class="col-12 col-md-9 col-xl-6 align-self-center"
@@ -219,7 +279,7 @@ const showErrorPrice = () => {
           />
           <div class="w-full flex justify-center gap-4">
             <span class="text-2xl">
-              {{ isEdit ? `Edycja danych pokoi` : "Nowy pokój" }}
+              {{ isEdit ? `Edycja danych` : "Nowy pokój" }}
             </span>
             <div v-if="roomStore.loadingRooms">
               <ProgressSpinner
@@ -242,60 +302,111 @@ const showErrorPrice = () => {
               v-model="room.name"
               maxlength="100"
               :invalid="showErrorName()"
+
           />
           <small class="text-red-500">{{
               showErrorName() ? "Pole jest wymagane." : "&nbsp;"
             }}</small>
         </div>
 
-        <!-- ROW-2 BEDS INVOICE NUMBER/YEAR  -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div class="flex flex-col">
-            <label class="pl-2" for="single">Łóżko pojedyńcze</label>
-            <InputNumber class=""
-                         id="single"
-                         v-model="singleBed"
-                         mode="decimal"
-                         show-buttons
-                         :min="0"
-                         :max="10"
-                         fluid
-            />
-          </div>
-          <div class="flex flex-col">
-            <label class="pl-2" for="double">Łóżko podwójne</label>
-            <InputNumber
-                id="double"
-                v-model="doubleBed"
-                mode="decimal"
-                :use-grouping="false"
-                show-buttons
-                :min="0"
-                :max="10"
-                fluid
-            />
-          </div>
-        </div>
+        <!-- TABLE BEDS -->
+        <Panel class="max-w-full">
+          <template #header>
+            <div class="flex w-full justify-between">
+              <p class="">Łóżka</p>
+              <OfficeButton
+                  title="Podaj nowe łóżko."
+                  text="Dodaj"
+                  btn-type="office-regular"
+                  type="button"
+                  @click="newBed"
+              />
+            </div>
+          </template>
+          <DataTable :value="room.beds" size="small"
+                     editMode="cell" dataKey="id" @cell-edit-complete="onCellEditComplete">
+            <!-- NAME -->
+            <Column field="name" header="Nazwa"
+                    class="min-w-32 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
+              <template #editor="{ data, field }">
+                <InputText v-model="data[field]" fluid @focus="UtilsService.selectText"/>
+              </template>
+            </Column>
 
-        <!-- ROW-3 PRICE  -->
-        <div class="flex flex-col w-full  mt-4">
-          <label class="ml-2" for="price">Cena netto / mc</label>
-          <InputNumber
-              id="price"
-              v-model="room.price"
-              :min-fraction-digits="2"
-              :max-fraction-digits="2"
-              mode="currency"
-              currency="PLN"
-              locale="pl-PL"
-              @focus="UtilsService.selectText"
-              :invalid="showErrorPrice()"
+            <!-- BED TYPE -->
+            <Column field="type" header="Rodzaj"
+                    class="hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
+              <template #body="{ data, field }">
+                {{ data[field] }}
+              </template>
+              <template #editor="{ data, field }">
+                <Select v-model="data[field]" :options="Object.values(BedType)"
+                        placeholder="Wybierz..." fluid/>
+              </template>
+            </Column>
 
-          />
-          <small class="text-red-500">{{
-              showErrorPrice() ? 'Pole jest wymagane.' : '&nbsp;'
-            }}</small>
-        </div>
+
+            <!-- AMOUNT DAY-->
+            <Column field="priceDay" header="Cena/dzień"
+                    class="min-w-16 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
+              <template #body="{ data, field }">
+                <div style="text-align: center">
+                  {{ UtilsService.formatCurrency(data[field]) }}
+                </div>
+              </template>
+              <template #editor="{ data, field }">
+                <InputNumber v-model="data[field]" mode="currency" currency="PLN" locale="pl-PL" fluid @focus="UtilsService.selectText"/>
+              </template>
+            </Column>
+
+            <!-- AMOUNT MONTH-->
+            <Column field="priceMonth" header="Cena/mc"
+                    class="min-w-16 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
+              <template #body="{ data, field }">
+                <div style="text-align: center">
+                  {{ UtilsService.formatCurrency(data[field]) }}
+                </div>
+              </template>
+              <template #editor="{ data, field }">
+                <InputNumber v-model="data[field]" mode="currency" currency="PLN" locale="pl-PL" fluid @focus="UtilsService.selectText"/>
+              </template>
+            </Column>
+
+            <!-- BED STATUS -->
+            <Column field="status" header="Stan"
+                    class="hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
+              <template #body="{ data, field }">
+                {{ data[field] }}
+              </template>
+              <template #editor="{ data, field }">
+                <Select v-model="data[field]" :options="Object.values(BedStatus)"
+                        placeholder="Wybierz..." fluid/>
+              </template>
+            </Column>
+
+            <template #empty>
+              <span class="text-red-500">Uzupełnij dane..</span>
+            </template>
+
+            <!--                EDIT, DELETE-->
+            <Column
+                header="Akcja"
+                :exportable="false"
+            >
+              <template #body="slotProps">
+                <OfficeIconButton
+                    title="Usuń łóżko."
+                    icon="pi pi-trash"
+                    severity="danger"
+                    @click="
+                        confirmDeleteItem(slotProps.data, slotProps.index)
+                      "
+                />
+              </template>
+            </Column>
+          </DataTable>
+        </Panel>
+
 
         <!-- ROW-4  OTHER INFO  -->
         <div class="row">

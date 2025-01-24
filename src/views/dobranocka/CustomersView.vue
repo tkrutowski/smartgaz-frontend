@@ -78,14 +78,14 @@ const submitDelete = async () => {
               severity: 'warn',
               summary: "Blokada",
               detail:getErrorMessage(reason),
-              life: 3000,
+              life: 5000,
             })
           } else
             toast.add({
               severity: "error",
-              summary: reason.message,
-              detail: "Nie udało się usunąć klienta",
-              life: 3000,
+              summary: "Nie udało się usunąć klienta",
+              detail: reason.response.data.message,
+              life: 5000,
             });
         });
   }

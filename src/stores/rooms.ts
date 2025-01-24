@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import type {Room} from "../types/Room.ts";
+import {BedStatus, BedType, type Room} from "../types/Room.ts";
 
 export const useRoomStore = defineStore('room', {
     state: () => ({
@@ -21,12 +21,13 @@ export const useRoomStore = defineStore('room', {
         //REFRESH ROOMS
         //
         async refreshRooms() {
-            this.rooms = await this.getRoomsFromDb()
+            if (!this.loadingRooms)
+                this.rooms = await this.getRoomsFromDb()
         },
         //
         //GET ROOMS
         //
-         async getRooms() {
+        async getRooms() {
             console.log('START - getRooms()')
             if (this.rooms.length === 0 && !this.loadingRooms) {
                 await this.refreshRooms()
@@ -34,6 +35,23 @@ export const useRoomStore = defineStore('room', {
             console.log('END - getRooms()')
 
             return this.rooms
+        },
+        getRoomColorByBed(idBed:number):string {
+            // console.log('START - getRoomColorByBed()')
+            const room = this.rooms.find(room =>
+                room.beds.some(bed => bed.id === idBed)
+            );
+
+            return room ? `#${room.color}` : '';
+        },
+        getRoomByBed(idBed:number):Room | null {
+            console.log('START - getRoomByBed()')
+            const room = this.rooms.find(room =>
+                room.beds.some(bed => bed.id === idBed)
+            );
+            console.log('END - getRoomColorByBed()')
+
+            return room ? room : null;
         },
         //-------------------------------------------------------DATABASE
         //
@@ -47,7 +65,7 @@ export const useRoomStore = defineStore('room', {
             console.log('getRoomsFromDb() - Ilosc[]: ' + response.data.length)
             this.loadingRooms = false
             console.log('END - getRoomsFromDb()')
-            return response.data
+            return response.data;
         },
         //
         //GET ROOM FROM DB BY ID
@@ -58,10 +76,10 @@ export const useRoomStore = defineStore('room', {
 
             const response = await httpCommon.get(`/v1/dobranocka/room/` + roomId)
             this.loadingRooms = false
-            console.log('END - getRoomFromDb()',response)
-            if (response.data)
+            console.log('END - getRoomFromDb()', response)
+            if (response.data) {
                 return response.data
-            else
+            } else
                 return null
         },
         //
@@ -78,8 +96,20 @@ export const useRoomStore = defineStore('room', {
         //ADD ROOM
         //
         async addRoomDb(room: Room) {
-            console.log('START - addRoomDb()',room)
-            const response = await httpCommon.post(`/v1/dobranocka/room`, room)
+            console.log('START - addRoomDb()', room)
+            const payload = {
+                ...room,
+                beds: room.beds.map(bed => ({
+                    ...bed,
+                    type: Object.keys(BedType).find(
+                        key => BedType[key as keyof typeof BedType] === bed.type
+                    ),
+                    status: Object.keys(BedStatus).find(
+                        key => BedStatus[key as keyof typeof BedStatus] === bed.status
+                    )
+                }))
+            };
+            const response = await httpCommon.post(`/v1/dobranocka/room`, payload)
             this.rooms.push(response.data)
             console.log('END - addRoomDb()')
         },
@@ -89,7 +119,19 @@ export const useRoomStore = defineStore('room', {
         //
         async updateRoomDb(room: Room) {
             console.log('START - updateRoomDb()', room)
-            const response = await httpCommon.put(`/v1/dobranocka/room`, room)
+            const payload = {
+                ...room,
+                beds: room.beds.map(bed => ({
+                    ...bed,
+                    type: Object.keys(BedType).find(
+                        key => BedType[key as keyof typeof BedType] === bed.type
+                    ),
+                    status: Object.keys(BedStatus).find(
+                        key => BedStatus[key as keyof typeof BedStatus] === bed.status
+                    )
+                }))
+            };
+            const response = await httpCommon.put(`/v1/dobranocka/room`, payload)
             const index = this.rooms.findIndex((r: Room) => r.id === room.id)
             if (index !== -1) this.rooms.splice(index, 1, response.data)
             console.log('END - updateRoomDb()')

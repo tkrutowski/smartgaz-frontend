@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api';
-import type {Invoice, InvoiceItem, PaymentStatus} from "../../types/Invoice";
+import {type Invoice, type InvoiceItem, PaymentMethod, type PaymentStatus} from "../../types/Invoice";
 import OfficeButton from "../../components/OfficeButton.vue";
 import router from "../../router";
 import StatusButton from "../../components/StatusButton.vue";
@@ -16,6 +16,8 @@ import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue
 import {UtilsService} from "../../service/UtilsService.ts";
 import type {AxiosError, AxiosResponse} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
+import {FinanceService} from "../../service/FinanceService.ts";
+import type {Customer} from "@/types/Customer.ts";
 
 const invoiceStore = useInvoiceStore();
 const toast = useToast();
@@ -25,13 +27,12 @@ const filters = ref();
 const initFilters = () => {
   filters.value = {
     global: {value: null, matchMode: FilterMatchMode.CONTAINS},
-    customer: {value: null, matchMode: FilterMatchMode.CONTAINS},
+    customer: {value: null, matchMode: FilterMatchMode.IN},
     sellDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
     invoiceDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
     paymentDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
     amount: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
     invoiceNumber: {value: null, matchMode: FilterMatchMode.CONTAINS},
-
   };
 }
 initFilters();
@@ -67,7 +68,7 @@ const changeStatusConfirmationMessage = computed(() => {
     return `Czy chcesz zmienić status faktury nr <b>${
         invoiceTemp.value.invoiceNumber
     }</b> na <b>${
-        invoiceTemp.value.paymentStatus.name === "PAID"
+        invoiceTemp.value.paymentStatus === "PAID"
             ? "Do zapłaty"
             : "Zapłacony"
     }</b>?`;
@@ -76,13 +77,7 @@ const changeStatusConfirmationMessage = computed(() => {
 const submitChangeStatus = async () => {
   console.log("submitChangeStatus()");
   if (invoiceTemp.value) {
-    let newStatus: PaymentStatus = {
-      name: invoiceTemp.value.paymentStatus.name === "PAID" ? "TO_PAY" : "PAID",
-      viewName:
-          invoiceTemp.value?.paymentStatus.viewName !== "PAID"
-              ? "Zapłacony"
-              : "Do zapłaty",
-    };
+    let newStatus: PaymentStatus = invoiceTemp.value.paymentStatus === "PAID" ? "TO_PAY" : "PAID";
     await invoiceStore.updateInvoiceStatusDb(invoiceTemp.value.idInvoice, newStatus)
         .then(() => {
           toast.add({
@@ -100,7 +95,7 @@ const submitChangeStatus = async () => {
             summary: reason.message,
             detail: "Błąd podczas aktualizacji statusu faktury nr: " +
                 invoiceTemp.value?.invoiceNumber,
-            life: 3000,
+            life: 5000,
           });
         })
   }
@@ -136,9 +131,9 @@ const submitDelete = async () => {
         .catch((reason: AxiosError) => {
           toast.add({
             severity: "error",
-            summary: reason.message,
-            detail: "Nie usunięto faktury nr: " + invoiceTemp.value?.invoiceNumber,
-            life: 3000,
+            summary: "Nie usunięto faktury nr: " + invoiceTemp.value?.invoiceNumber,
+            detail: reason.response.data.message,
+            life: 5000,
           });
         })
     showDeleteConfirmationDialog.value = false;
@@ -163,9 +158,9 @@ const downloadPdf = (idInvoice: number, invoiceNumber:string) => {
       .catch((reason:AxiosError) => {
         toast.add({
           severity: "error",
-          summary: reason.message,
-          detail: "Nie udało się utworzyć PDF dla faktury nr: " + invoiceNumber,
-          life: 3000,
+          summary: "Nie udało się utworzyć PDF dla faktury nr: " + invoiceNumber,
+          detail: reason.response.data.message,
+          life: 5000,
         });
       });
 }
@@ -206,6 +201,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateScreenSize);
 });
+
+const getCustomerLabel = (customer:Customer) =>{
+  return `${customer.name} ${customer.firstName}`;
+}
 </script>
 
 
@@ -243,7 +242,7 @@ onUnmounted(() => {
         v-if="!invoiceStore.loadingInvoices"
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
-        :value="invoiceStore.getInvoiceDtos"
+        :value="invoiceStore.invoices"
         :loading="invoiceStore.loadingInvoices"
         striped-rows
         removable-sort
@@ -254,7 +253,7 @@ onUnmounted(() => {
         :rows-per-page-options="[5, 10, 20, 50]"
         table-style="min-width: 50rem"
         filter-display="menu"
-        :global-filter-fields="['customer', 'invoiceNumber', 'sellDate']"
+        :global-filter-fields="['customer.name', 'invoiceNumber', 'sellDate']"
         @page="handleRowsPerPageChange"
     >
       <template #header>
@@ -288,7 +287,7 @@ onUnmounted(() => {
       </template>
 
       <template #empty>
-        <p v-if="!customerStore.loadingCustomer" class="text-red-500 text-lg">
+        <p v-if="!invoiceStore.loadingInvoices" class="text-red-500 text-lg">
           Nie znaleziono faktur...
         </p>
       </template>
@@ -306,24 +305,24 @@ onUnmounted(() => {
       </Column>
       <!--      CUSTOMER  -->
       <Column
-          field="customer"
           header="Nazwa klienta"
           :sortable="true"
           style="min-width: 12rem"
           filter-field="customer"
           :show-filter-match-modes="false"
       >
-        <template #body="slotProps">
-          {{ slotProps.data[slotProps.field] }}
+        <template #body="{data}">
+          {{ getCustomerLabel(data.customer) }}
         </template>
         <template #filter="{ filterModel }">
-          <Select
+          <MultiSelect
               v-model="filterModel.value"
-              :options="customerStore.getCustomerNames"
+              :options="customerStore.customers"
+              :option-label="getCustomerLabel"
               placeholder="Wybierz..."
               class="p-column-filter"
+              :maxSelectedLabels="0"
               style="min-width: 12rem; width: 12rem"
-              :show-clear="true"
           />
         </template>
       </Column>
@@ -336,6 +335,7 @@ onUnmounted(() => {
           <DatePicker v-model="filterModel.value" dateFormat="yy-mm-dd" placeholder="yyyy-dd-mm" />
         </template>
       </Column>
+
       <!--      INVOICE DATE-->
       <Column field="invoiceDate" header="Data wystawienia" :sortable="true" data-type="date" >
         <template #body="{ data }">
@@ -345,8 +345,14 @@ onUnmounted(() => {
           <DatePicker v-model="filterModel.value" dateFormat="yy-mm-dd" placeholder="yyyy-dd-mm" />
         </template>
       </Column>
+
       <!--      PAYMENT METHOD-->
-      <Column field="paymentMethod" header="Rodzaj płatności" :sortable="true"/>
+      <Column field="paymentMethod" header="Rodzaj płatności" :sortable="true">
+        <template #body="{ data }">
+          {{ UtilsService.getEnumValueByKey(PaymentMethod, data.paymentMethod) }}
+        </template>
+      </Column>
+
       <!--      PAYMENT DATE -->
       <Column field="paymentDate" header="Termin płatności" :sortable="true" data-type="date">
         <template #body="{ data }">
@@ -356,15 +362,17 @@ onUnmounted(() => {
           <DatePicker v-model="filterModel.value" dateFormat="yy-mm-dd" placeholder="yyyy-dd-mm" />
         </template>
       </Column>
+
       <!--      AMOUNT-->
-      <Column field="amount" header="Wartość netto" style="min-width: 120px" dataType="numeric">
+      <Column header="Wartość netto" style="min-width: 120px" dataType="numeric">
         <template #body="slotProps">
-          {{ UtilsService.formatCurrency(slotProps.data[slotProps.field]) }}
+          {{ UtilsService.formatCurrency(FinanceService.getInvoiceAmount(slotProps.data)) }}
         </template>
         <template #filter="{ filterModel }">
           <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL"/>
         </template>
       </Column>
+
       <Column field="paymentStatus" header="Status" style="width: 100px">
         <template #body="{ data, field }">
           <StatusButton
@@ -416,7 +424,7 @@ onUnmounted(() => {
                 <div style="text-align: left">{{ data[field] }}</div>
               </template>
             </Column>
-            <Column field="jm" header="Jm">
+            <Column field="unit" header="Jm">
               <template #body="{ data, field }">
                 <div style="text-align: center">{{ data[field] }}</div>
               </template>

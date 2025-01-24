@@ -66,7 +66,7 @@ const searchLogs = () => {
           severity: 'error',
           summary: 'Błąd',
           detail: 'Nie udało się pobrać logów.',
-          life: 3000,
+          life: 5000,
         })
       })
 }

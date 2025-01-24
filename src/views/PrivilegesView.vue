@@ -46,7 +46,7 @@ const onRowEditSave = (event: DataTableRowEditSaveEvent) => {
           severity: 'error',
           summary: 'Informacja',
           detail: `Błąd podczas zmieniony uprawnień dla roli: ${newData.role.name}`,
-          life: 3500,
+          life: 5000,
         })
       })
 }
@@ -83,9 +83,9 @@ const saveRole = async () => {
     }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: reason?.message,
-        detail: 'Błąd podczas dodawania upawnień.',
-        life: 3000,
+        summary: 'Błąd podczas dodawania upawnień.',
+        detail: reason.response.data.message,
+        life: 5000,
       })
     })
     addExistingRoleToUserDialog.value = false
@@ -120,9 +120,9 @@ const deletePrivilege = async () => {
     }).catch((reason: AxiosError) => {
       toast.add({
         severity: 'error',
-        summary: reason?.message,
-        detail: `Błąd podczas usuwanie upawnienia: ${selectedRole.value?.name}`,
-        life: 3000,
+        summary: `Błąd podczas usuwanie upawnienia: ${selectedRole.value?.name}`,
+        detail: reason.response.data.message,
+        life: 5000,
       })
     })
     deletePrivilegeDialog.value = false

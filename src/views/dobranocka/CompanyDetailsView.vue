@@ -54,9 +54,9 @@ async function saveCompany() {
         }).catch((reason: AxiosError) => {
           toast.add({
             severity: "error",
-            summary: reason.message,
-            detail: "Błąd podczas aktualizacji danych firmy.",
-            life: 3000,
+            summary: "Błąd podczas aktualizacji danych firmy.",
+            detail: reason.response.data.message,
+            life: 5000,
           });
         }).finally(() => {
           btnSaveDisabled.value = false
@@ -95,7 +95,7 @@ const showError = (msg: string) => {
     severity: "error",
     summary: "Error Message",
     detail: msg,
-    life: 3000,
+    life: 5000,
   });
 };
 const isNotValid = () => {

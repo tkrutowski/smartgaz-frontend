@@ -31,7 +31,7 @@ const items = ref([
         command: () => {
           router.push({
             name: "Customer",
-            params: { isEdit: "false", customerId: 0 },
+            params: {isEdit: "false", customerId: 0},
           });
         },
       },
@@ -39,7 +39,7 @@ const items = ref([
         label: "Lista klientów",
         icon: "pi pi-fw pi-bars",
         command: () => {
-          router.push({ name: "Customers" });
+          router.push({name: "Customers"});
         },
       },
     ],
@@ -55,7 +55,7 @@ const items = ref([
         command: () => {
           router.push({
             name: "Invoice",
-            params: { isEdit: "false", invoiceId: 0 },
+            params: {isEdit: "false", invoiceId: 0},
           });
         },
       },
@@ -63,7 +63,7 @@ const items = ref([
         label: "Lista faktur",
         icon: "pi pi-fw pi-list",
         command: () => {
-          router.push({ name: "Invoices" });
+          router.push({name: "Invoices"});
         },
       },
       {
@@ -74,20 +74,19 @@ const items = ref([
         icon: "pi pi-fw pi-building",
         disabled: !authorizationStore.hasAccessDobranockaCompany,
         command: () => {
-          router.push({ name: "Company" });
+          router.push({name: "Company"});
         },
       },
     ],
   },
   {
-    label: 'Wynajem',
+    label: 'Pokoje',
     icon: 'pi pi-home',
     disabled: !authorizationStore.hasAccessDobranockaRoom,
     items: [
       {
         label: 'Nowy pokój',
         icon: 'pi pi-plus',
-        disabled: !authorizationStore.hasAccessDobranockaRoom,
         command: () => {
           router.push({
             name: 'Room',
@@ -98,41 +97,40 @@ const items = ref([
       {
         label: 'Lista pokoi',
         icon: 'pi pi-fw pi-list',
-        disabled: !authorizationStore.hasAccessDobranockaRoom,
         command: () => {
           router.push({name: 'Rooms'})
         },
       },
+    ],
+  },
+  {
+    label: 'Rezerwacje',
+    icon: 'pi pi-desktop',
+    disabled: !authorizationStore.hasAccessDobranockaReservation,
+    items: [
       {
-        separator: true
+        label: 'Nowa rezerwacja',
+        icon: 'pi pi-plus',
+        command: () => {
+          router.push({
+            name: 'ReservationSearch',
+          })
+        },
       },
       {
-        label: 'Rezerwacje',
-        icon: 'pi pi-desktop',
-        // disabled: !authorizationStore.hasAccessDevice,
-        items: [
-          {
-            label: 'Nowa rezerwacja',
-            icon: 'pi pi-plus',
-            // to: { name: "Invoice", params: { isEdit: "false", invoiceId: 0 } },
-            command: () => {
-              router.push({
-                name: 'Device',
-                params: {isEdit: 'false', deviceId: 0},
-              })
-            },
-          },
-          {
-            label: 'Kalendarz',
-            icon: 'pi pi-fw pi-list',
-            // to: { name: "Invoices" },
-            command: () => {
-              router.push({name: 'Devices'})
-            },
-          },
-        ],
+        label: 'Lista rezerwacji',
+        icon: 'pi pi-fw pi-list',
+        command: () => {
+          router.push({name: 'Reservations'})
+        },
       },
     ],
+  },
+
+  {
+    label: 'Kalendarz',
+    icon: 'pi pi-calendar',
+    disabled: !authorizationStore.hasAccessDobranockaCalendar,
   },
 ])
 </script>
@@ -140,7 +138,7 @@ const items = ref([
 <template>
   <Menubar :model="items">
     <template #start>
-<!--      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2"/>-->
+      <!--      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2"/>-->
     </template>
     <template #end>
       <div v-if="!authorizationStore.isAuthenticatedOrToken">

@@ -3,8 +3,7 @@ import {useCustomerStore} from "../../stores/customers";
 import {useInvoiceStore} from "../../stores/invoices";
 import {useRoute} from "vue-router";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import type {Customer} from "../../types/Customer";
-import type {Invoice, InvoiceItem} from "../../types/Invoice";
+import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "../../types/Invoice";
 import OfficeButton from "../../components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
 import router from "../../router";
@@ -14,22 +13,22 @@ import OfficeIconButton from "../../components/OfficeIconButton.vue";
 import {UtilsService} from "../../service/UtilsService.ts";
 import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
 import type {AxiosError} from "axios";
+import moment from "moment";
 
 const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
 const route = useRoute();
 
 const toast = useToast();
-const selectedCustomer = ref<Customer | null>(null);
+// const selectedCustomer = ref<Customer | null>(null);
 const invoice = ref<Invoice>({
   idInvoice: 0,
-  idCustomer: 0,
+  customer: null,
   invoiceNumber: "",
   sellDate: null,
   invoiceDate: null,
-  paymentMethod: {name: "TRANSFER", viewName: "przelew"},
-  paymentStatus: {name: "TO_PAY", viewName: "Do zapłaty"},
-  paymentDeadline: 14,
+  paymentMethod: UtilsService.getEnumKeyByValue(PaymentMethod, "przelew"),
+  paymentStatus: UtilsService.getEnumKeyByValue(PaymentStatus, "Do zapłaty"),
   paymentDate: null,
   otherInfo: "",
   invoiceItems: [],
@@ -40,7 +39,7 @@ const invoiceItem = ref<InvoiceItem>({
   idInvoice: 0,
   name: "",
   pkwiu: "",
-  jm: "",
+  unit: "",
   quantity: 0,
   amount: 0,
   vat: {
@@ -52,6 +51,8 @@ const invoiceItem = ref<InvoiceItem>({
 const invoiceNumber = ref<number>(0);
 const invoiceYear = ref<number>(2020);
 const btnShowBusy = ref<boolean>(false);
+const paymentDeadline = ref<number>(14);
+
 const btnSaveDisabled = ref<boolean>(false);
 let editedInvoiceNumber: number = 0;
 
@@ -134,6 +135,8 @@ async function newInvoice() {
   } else {
     btnSaveDisabled.value = true;
     invoice.value.invoiceNumber = invoiceYear.value + "/" + invoiceNumber.value;
+    const invoiceDate = moment(invoice.value.invoiceDate);
+    invoice.value.paymentDate = invoiceDate.add(paymentDeadline.value, 'day')
     await invoiceStore.addInvoiceDb(invoice.value)
         .then(() => {
           toast.add({
@@ -149,9 +152,9 @@ async function newInvoice() {
         .catch((reason: AxiosError) => {
           toast.add({
             severity: "error",
-            summary: reason.message,
-            detail: "Błąd podczas zapisu faktury.",
-            life: 3000,
+            summary: "Błąd podczas zapisu faktury.",
+            detail: reason.response.data.message,
+            life: 5000,
           });
         }).finally(() => btnSaveDisabled.value = false);
   }
@@ -181,13 +184,13 @@ async function editInvoice() {
             router.push({name: "Invoices"});
           }, 3000);
         })
-        .catch(() => {
+        .catch((reason:AxiosError) => {
           btnSaveDisabled.value = false
           toast.add({
             severity: "error",
-            summary: "Błąd",
-            detail: "Błąd podczas edycji faktury.",
-            life: 3000,
+            summary: "Błąd podczas edycji faktury.",
+            detail: reason.response.data.message,
+            life: 5000,
           });
         })
   }
@@ -231,7 +234,7 @@ function newItem() {
   invoiceItem.value.idInvoice = invoice.value.idInvoice;
   invoiceItem.value.name = "Najem krótkotrwały pomieszczeń mieszkalnych, Siekierki Wielkie ul. Poznańska 32";
   invoiceItem.value.amount = 0;
-  invoiceItem.value.jm = 'szt.'
+  invoiceItem.value.unit = 'szt.'
   invoiceItem.value.quantity = 0;
   invoiceItem.value.vat = {
     viewValue: "8%",
@@ -311,7 +314,6 @@ onMounted(() => {
   btnSaveDisabled.value = true;
   if (customerStore.customers.length === 0) customerStore.refreshCustomers();
   if (invoiceStore.invoices.length === 0) invoiceStore.refreshInvoices();
-  invoiceStore.getPaymentType();
   invoiceStore.getVatType();
   btnSaveDisabled.value = false;
 });
@@ -331,9 +333,15 @@ onMounted(async () => {
         .then((data) => {
           if (data) {
             invoice.value = data;
-            selectedCustomer.value = customerStore.getCustomerById(
-                invoice.value.idCustomer
-            );
+            if (data.paymentDate && data.invoiceDate) {
+              const paymentDate = moment(data.paymentDate);
+              const invoiceDate = moment(data.invoiceDate);
+
+              paymentDeadline.value = paymentDate.diff(invoiceDate, 'days');
+            } else {
+              paymentDeadline.value = 0;
+            }
+
             invoiceNumber.value = Number(
                 invoice.value.invoiceNumber.split("/")[1]
             );
@@ -351,7 +359,7 @@ onMounted(async () => {
 });
 
 //
-//ERROR
+//-------------------------------------------------------ERROR
 //
 const submitted = ref<boolean>(false);
 
@@ -360,7 +368,7 @@ const showError = (msg: string) => {
     severity: "error",
     summary: "Error Message",
     detail: msg,
-    life: 3000,
+    life: 5000,
   });
 };
 const isNotValid = () => {
@@ -379,12 +387,12 @@ const showErrorInvoiceItems = () => {
 };
 const hasInvalidInvoiceItems = (): boolean => {
   return invoice.value.invoiceItems.some(item => {
-    return !item.name || !item.jm || item.quantity <= 0 || item.amount <= 0;
+    return !item.name || !item.unit || item.quantity <= 0 || item.amount <= 0;
   });
 };
 
 const showErrorCustomer = () => {
-  return submitted.value && invoice.value.idCustomer <= 0;
+  return submitted.value && invoice.value.customer === null;
 };
 const showErrorInvoiceDate = () => {
   return submitted.value && !invoice.value.invoiceDate
@@ -408,10 +416,18 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateScreenSize);
 });
+
+const getCustomerLabel = (option) =>{
+  console.log("getCustomerLabel",option);
+  return `${option.name} ${option.firstName}`;
+}
+const paymentMethods = Object.keys(PaymentMethod).map((key) => ({
+  label: PaymentMethod[key as keyof typeof PaymentMethod], // wartość
+  value: key, // klucz
+}));
 </script>
 
 <template>
-  <Toast/>
   <TheMenuDobranocka/>
   <ConfirmationDialog
       v-model:visible="showDeleteConfirmationDialog"
@@ -451,15 +467,10 @@ onUnmounted(() => {
                 <label for="input-customer">Wybierz klienta:</label>
                 <Select
                     id="input-customer"
-                    v-model="selectedCustomer"
+                    v-model="invoice.customer"
                     :invalid="showErrorCustomer()"
                     :options="customerStore.customers"
-                    option-label="name"
-                    :onchange="
-                        (invoice.idCustomer = selectedCustomer
-                          ? selectedCustomer.id
-                          : 0)
-                      "
+                    :option-label="getCustomerLabel"
                     required
                 />
                 <small class="text-red-500">{{
@@ -552,7 +563,7 @@ onUnmounted(() => {
                 <label for="input">Odroczenie płatności:</label>
                 <InputNumber
                     id="input"
-                    v-model="invoice.paymentDeadline"
+                    v-model="paymentDeadline"
                     mode="decimal"
                     :use-grouping="false"
                     show-buttons
@@ -563,13 +574,13 @@ onUnmounted(() => {
               </div>
               <div class="flex flex-row gap-4">
                 <div class="flex flex-col w-full">
-                  <label for="input-customer">Forma płatności:</label>
+                  <label for="payment-method">Forma płatności:</label>
                   <Select
-                      id="input-customer"
+                      id="payment-method"
                       v-model="invoice.paymentMethod"
-                      class="border-green"
-                      :options="invoiceStore.paymentTypes"
-                      option-label="viewName"
+                      :options="paymentMethods"
+                      option-label="label"
+                      option-value="value"
                       required
                   />
                 </div>
@@ -628,12 +639,12 @@ onUnmounted(() => {
               <Column field="quantity" header="Ilość"
                       class="min-w-16 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
                 <template #editor="{ data, field }">
-                  <InputNumber v-model="data[field]" :min="0" mode="decimal" fluid/>
+                  <InputNumber v-model="data[field]" :min="0" mode="decimal" fluid @focus="UtilsService.selectText"/>
                 </template>
               </Column>
 
               <!-- JM -->
-              <Column field="jm" header="Jm"
+              <Column field="unit" header="Jm"
                       class="min-w-16 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
                 <template #editor="{ data, field }">
                   <InputText v-model="data[field]" fluid maxlength="10"/>
@@ -650,7 +661,7 @@ onUnmounted(() => {
                   </div>
                 </template>
                 <template #editor="{ data, field }">
-                  <InputNumber v-model="data[field]" mode="currency" currency="PLN" locale="pl-PL" fluid/>
+                  <InputNumber v-model="data[field]" mode="currency" currency="PLN" locale="pl-PL" fluid @focus="UtilsService.selectText"/>
                 </template>
               </Column>
 

@@ -42,7 +42,7 @@ export const UtilsService = {
         return matchedElements
     },
 
-    isPositiveInteger (value: string)  {
+    isPositiveInteger(value: string) {
         // console.log('isPositiveInteger',value)
         let str = String(value);
         if (!str) {
@@ -54,26 +54,55 @@ export const UtilsService = {
     },
 
     isPositiveFloat(value: string): boolean {
-    // console.log('isPositiveFloat', value);
-    let str: string = String(value);
-    str = str.trim();
-    if (!str) {
-        return false;
-    }
-    const num: number = Number(str);
-    return !isNaN(num) && num > 0 && str === String(num);
-},
+        console.log('isPositiveFloat', value);
+        let str: string = String(value);
+        str = str.trim();
+        if (!str) {
+            return false;
+        }
+        const num: number = Number(str);
+        return !isNaN(num) && num > 0 && str === String(num);
+    },
 
     mapVatToEnum(vat: { viewValue: string; numberValue: number; multiplier: number }): string {
-    if (!vat) {
-        return "VAT_0"; // Domyślna wartość, jeśli `vat` jest null lub undefined
-    }
+        if (!vat) {
+            return "VAT_0"; // Domyślna wartość, jeśli `vat` jest null lub undefined
+        }
 
-    if (vat.viewValue === "8%") return "VAT_8";
-    if (vat.viewValue === "23%") return "VAT_23";
+        if (vat.viewValue === "8%") return "VAT_8";
+        if (vat.viewValue === "23%") return "VAT_23";
 
-    // Dodaj inne mapowania w zależności od wymagań
-    return "VAT_0"; // Domyślna wartość
-}
+        // Dodaj inne mapowania w zależności od wymagań
+        return "VAT_0"; // Domyślna wartość
+    },
 
+    getEnumValueByKey<T>(enumObject: T, key: keyof T): T[keyof T] | undefined {
+        return enumObject[key];
+    },
+
+    getEnumKeyByValue<T>(enumObject: T, value: string): keyof T | undefined {
+        console.log("getEnumKeyByValue - enumObject", enumObject, "value", value);
+        const result = Object.keys(enumObject).find((key) => {
+            const enumValue = enumObject[key as keyof T];
+            console.log(`Comparing enumValue: ${enumValue} with value: ${value}`);
+            return enumValue === value;
+        }) as keyof T | undefined;
+
+        console.log("getEnumKeyByValue - result", result);
+        return result;
+    // }
+
+
+
+
+
+
+        // console.log("getEnumKeyByValue", enumObject, value);
+        // const result =  Object.keys(enumObject).find(
+        //     (key) => enumObject[key as keyof T] === value
+        // ) as keyof T | undefined;
+        //
+        // console.log("getEnumKeyByValue - result", result);
+        // return result
+    },
 }

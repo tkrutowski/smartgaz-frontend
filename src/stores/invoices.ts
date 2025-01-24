@@ -1,7 +1,7 @@
 import {defineStore} from "pinia";
 import httpCommon from "../config/http-common";
-import {useCustomerStore} from "../stores/customers.ts";
-import type {Invoice, InvoiceDto, PaymentMethod, PaymentStatus, Vat} from "../types/Invoice.ts";
+import type {Invoice, Vat} from "../types/Invoice.ts";
+import {PaymentMethod, PaymentStatus} from "../types/Invoice.ts";
 import moment from "moment";
 
 export const useInvoiceStore = defineStore("invoice", {
@@ -22,30 +22,6 @@ export const useInvoiceStore = defineStore("invoice", {
     getters: {
         getSortedInvoices: (state) =>
             state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
-        getInvoiceDtos: (state) => {
-            const customerStore = useCustomerStore();
-            const invoicesDtos = JSON.parse(JSON.stringify(state.invoices));
-            return invoicesDtos.map((invoice: Invoice) => {
-                const dto: InvoiceDto = {
-                    idInvoice: invoice.idInvoice,
-                    invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate) : null,
-                    invoiceItems: invoice.invoiceItems,
-                    invoiceNumber: invoice.invoiceNumber,
-                    customer: customerStore.getCustomerById(invoice.idCustomer)?.firstName + " " + customerStore.getCustomerById(invoice.idCustomer)?.name,
-                    otherInfo: invoice.otherInfo,
-                    paymentDate: invoice.paymentDate ? new Date(invoice.paymentDate) : null,
-                    paymentDeadline: invoice.paymentDeadline,
-                    paymentMethod: invoice.paymentMethod.viewName,
-                    paymentStatus: invoice.paymentStatus.name,
-                    sellDate: invoice.sellDate ? new Date(invoice.sellDate) : null
-                }
-                return dto
-            });
-        },
-        // getCustomerName: (state) => {
-        //   const all = state.invoices.map((inv) => inv.customerName);
-        //   return [...new Set(all)];
-        // },
     },
     //actions = metody w komponentach
     actions: {
@@ -83,12 +59,7 @@ export const useInvoiceStore = defineStore("invoice", {
                 console.log(
                     "getInvoicesFromDb() - Ilosc faktur[]: " + response.data.length
                 );
-                this.invoices = response.data.map((invoice: any) => ({
-                    ...invoice,
-                    invoiceDate: new Date(invoice.invoiceDate),
-                    sellDate: invoice.sellDate ? new Date(invoice.sellDate) : null,
-                    paymentDate: invoice.paymentDate ? new Date(invoice.paymentDate) : null,
-                }));
+                this.invoices = response.data.map((invoice: any) => this.convertResponse(invoice));
                 console.log("getInvoicesFromDb()", this.invoices);
             this.loadingInvoices = false;
             console.log("END - getInvoicesFromDb(" + paymentStatus + ")");
@@ -103,16 +74,16 @@ export const useInvoiceStore = defineStore("invoice", {
             const response = await httpCommon.get(`/v1/dobranocka/invoice/` + invoiceId);
             this.loadingInvoices = false;
             console.log("END - getInvoiceFromDb()");
-            return response.data;
+            return this.convertResponse(response.data);
         },
 
         //
         //CHANGE PAYMENT_STATUS
         //
         async updateInvoiceStatusDb(invoiceId: number, status: PaymentStatus) {
-            console.log("START - updateInvoiceStatusDb()");
+            console.log("START - updateInvoiceStatusDb()",status);
             await httpCommon.put(
-                `/v1/dobranocka/invoice/paymentstatus/${invoiceId}?status=${status.name}`);
+                `/v1/dobranocka/invoice/paymentstatus/${invoiceId}?status=${status}`);
             const inv = this.invoices.find((inv) => inv.idInvoice === invoiceId);
             if (inv) {
                 inv.paymentStatus = status;
@@ -134,7 +105,7 @@ export const useInvoiceStore = defineStore("invoice", {
             console.log("addInvoiceDb() trans", transformedInvoice);
 
             const response = await httpCommon.post(`/v1/dobranocka/invoice`, transformedInvoice);
-            this.invoices.push(response.data);
+            this.invoices.push(this.convertResponse(response.data));
             console.log("END - addInvoiceDb()");
         },
 
@@ -144,11 +115,18 @@ export const useInvoiceStore = defineStore("invoice", {
         //
         async updateInvoiceDb(invoice: Invoice) {
             console.log("START - updateInvoiceDb()");
-            const response = await httpCommon.put(`/v1/dobranocka/invoice`, invoice);
+            const transformedInvoice = {
+                ...invoice,
+                invoiceDate: invoice.invoiceDate ? moment(invoice.invoiceDate).format("YYYY-MM-DD") : null,
+                sellDate: invoice.sellDate ? moment(invoice.sellDate).format("YYYY-MM-DD") : null,
+                paymentDate: invoice.paymentDate ? moment(invoice.paymentDate).format("YYYY-MM-DD") : null,
+            };
+            console.log("updateInvoiceDb() trans", transformedInvoice);
+            const response = await httpCommon.put(`/v1/dobranocka/invoice`, transformedInvoice);
             const index = this.invoices.findIndex(
                 (inv) => inv.idInvoice === invoice.idInvoice
             );
-            if (index !== -1) this.invoices.splice(index, 1, response.data);
+            if (index !== -1) this.invoices.splice(index, 1, this.convertResponse(response.data));
             console.log("END - updateInvoiceStatusDb()");
         },
 
@@ -186,21 +164,6 @@ export const useInvoiceStore = defineStore("invoice", {
             return newNo ? newNo + 1 : 1;
         },
 
-        //
-        //GET PAYMENT TYPE
-        //
-        async getPaymentType() {
-            console.log("START - getPaymentType()");
-            this.loadingPaymentType = true;
-            if (this.paymentTypes.length === 0) {
-                const response = await httpCommon.get(
-                    `/v1/dobranocka/invoice/paymenttype`);
-                this.paymentTypes = response.data;
-            } else {
-                console.log("getPaymentType() - BEZ GET");
-            }
-            this.loadingPaymentType = false;
-        },
 
         //
         //GET VAT TYPE
@@ -239,5 +202,17 @@ export const useInvoiceStore = defineStore("invoice", {
             console.log("END - getInvoicePdfFromDb()");
             return response
         },
+
+        convertResponse(invoice: Invoice) {
+            console.log("getInvoicesFromDb()", invoice);
+            return {
+                ...invoice,
+                invoiceDate: new Date(invoice.invoiceDate),
+                sellDate: invoice.sellDate ? new Date(invoice.sellDate) : null,
+                paymentDate: invoice.paymentDate ? new Date(invoice.paymentDate) : null,
+                // paymentMethod: PaymentMethod[invoice.paymentMethod as keyof typeof PaymentMethod] || invoice.paymentMethod,
+                // paymentStatus: PaymentStatus[invoice.paymentStatus as keyof typeof PaymentStatus] || invoice.paymentStatus,
+            }
+        }
     },
 });
