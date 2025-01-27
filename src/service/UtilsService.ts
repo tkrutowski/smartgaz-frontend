@@ -77,6 +77,7 @@ export const UtilsService = {
     },
 
     getEnumValueByKey<T>(enumObject: T, key: keyof T): T[keyof T] | undefined {
+        console.log('getEnumValueByKey', enumObject, key);
         return enumObject[key];
     },
 

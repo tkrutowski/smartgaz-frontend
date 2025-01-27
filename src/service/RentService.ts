@@ -1,4 +1,5 @@
-import {BedStatus, ReservationStatus} from "../types/Room.ts";
+import {BedStatus, BedType, ReservationStatus} from "../types/Room.ts";
+import {PaymentMethod} from "../types/Invoice.ts";
 
 export const RentService = {
 
@@ -37,7 +38,26 @@ export const RentService = {
             default:
                 return undefined;
         }
+    },
+
+    getPaymentMethodsKeyValue () {
+        return Object.keys(PaymentMethod).map((key) => ({
+            label: PaymentMethod[key as keyof typeof PaymentMethod], // wartość
+            value: key, // klucz
+        }));
+    },
+
+    getBedTypeKeyValue () {
+        return Object.keys(BedType).map((key) => ({
+            label: BedType[key as keyof typeof BedType], // wartość
+            value: key, // klucz
+        }));
+    },
+
+    getBedStatusKeyValue () {
+        return Object.keys(BedStatus).map((key) => ({
+            label: BedStatus[key as keyof typeof BedStatus], // wartość
+            value: key, // klucz
+        }));
     }
-
-
 }
