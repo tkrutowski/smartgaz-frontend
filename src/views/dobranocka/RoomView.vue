@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {useRoomStore} from "../../stores/rooms.ts";
 import {useRoute} from "vue-router";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, onMounted, ref} from "vue";
 import OfficeButton from "../../components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
 import router from "../../router";
@@ -12,7 +12,7 @@ import type {Bed, Room} from "../../types/Room.ts";
 import {BedStatus, BedType} from "../../types/Room.ts";
 import {UtilsService} from "../../service/UtilsService.ts";
 import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
 
 const roomStore = useRoomStore();
 const route = useRoute();
@@ -144,7 +144,7 @@ async function editRoom() {
           toast.add({
             severity: "error",
             summary: "Błąd podczas edycji pokoju.",
-            detail: reason.response.data.message,
+            detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
         }).finally(() => {
@@ -243,16 +243,12 @@ const showError = (msg: string) => {
 };
 const isNotValid = () => {
   return (
-      showErrorName() ||
-      showErrorPrice()
+      showErrorName()
   );
 };
 const showErrorName = () => {
   return submitted.value && room.value.name.length <= 0;
 };
-const showErrorPrice = () => {
-  return submitted.value && room.value.price <= 0
-}
 
 </script>
 

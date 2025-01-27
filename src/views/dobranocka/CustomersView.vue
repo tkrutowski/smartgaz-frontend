@@ -84,7 +84,7 @@ const submitDelete = async () => {
             toast.add({
               severity: "error",
               summary: "Nie udało się usunąć klienta",
-              detail: reason.response.data.message,
+              detail: (reason?.response?.data as { message: string }).message,
               life: 5000,
             });
         });

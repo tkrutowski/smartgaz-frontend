@@ -1,4 +1,3 @@
-import {BedStatus} from "../types/Room.ts";
 import type {Invoice} from "../types/Invoice.ts";
 
 export const FinanceService = {

@@ -5,11 +5,11 @@ import {onMounted, ref} from "vue";
 import {useCustomerStore} from "../../stores/customers";
 import {useRoomStore} from "../../stores/rooms.ts";
 import {RentService} from "../../service/RentService.ts";
-import {UtilsService} from "@/service/UtilsService.ts";
+import {UtilsService} from "../../service/UtilsService.ts";
 
 const customerStore = useCustomerStore();
 const roomStore = useRoomStore();
-const availableBeds = ref<Map<string, Bed[]>>(new Map<string, Bed[]>())
+const allBeds = ref<Map<string, Bed[]>>(new Map<string, Bed[]>())
 
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
@@ -17,7 +17,7 @@ const availableBeds = ref<Map<string, Bed[]>>(new Map<string, Bed[]>())
 onMounted(async () => {
   await roomStore.getRooms();
   await customerStore.getCustomers();
-  roomStore.rooms.forEach((room: Room) => availableBeds.value.set(room.name, room.beds));
+  roomStore.rooms.forEach((room: Room) => allBeds.value.set(room.name, room.beds));
 });
 
 </script>
@@ -26,13 +26,13 @@ onMounted(async () => {
   <TheMenuDobranocka/>
   <div class=" mt-1">
 
-    <div v-for="([key, beds]) in Array.from(availableBeds.entries())" :key="key">
+    <div v-for="([key, beds]) in Array.from(allBeds.entries())" :key="key">
       <div class="flex flex-col md:flex-row pt-4 gap-4 items-center justify-center">
         <div class="flex flex-col border-2 rounded-2xl w-full md:w-fit px-5 "
              :style="{borderColor: `${roomStore.getRoomColorByBed(bed.id)}`}"
              v-for="(bed) in beds" key="bed.id">
           <div class="flex flex-row  items-center justify-center gap-2">
-            <svg v-if="bed.type === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+            <svg v-if="bed.type.toString() === UtilsService.getEnumKeyByValue(BedType, BedType.SINGLE)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                  id="single-bed"
                  class="w-12 h-12 fill-current text-black dark:text-white">
               <path
@@ -45,8 +45,8 @@ onMounted(async () => {
             </svg>
 
             <span class="text-xl">{{ bed.name }}</span>
-            <Tag :severity="RentService.getSeverity(UtilsService.getEnumKeyByValue(BedStatus, bed.status))"
-                 :value="bed.status"></Tag>
+            <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)"
+                 :value="UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)"></Tag>
           </div>
         </div>
       </div>

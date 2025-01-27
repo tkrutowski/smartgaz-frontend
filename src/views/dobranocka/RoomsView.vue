@@ -38,7 +38,7 @@ const submitDelete = async () => {
       toast.add({
         severity: 'error',
         summary: 'Błąd podczas usuwania pokoju: ' + roomToRemove.value?.name,
-        detail: reason.response.data.message,
+        detail: (reason?.response?.data as { message: string }).message,
         life: 5000,
       })
     })

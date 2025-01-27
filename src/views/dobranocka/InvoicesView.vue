@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api';
-import {type Invoice, type InvoiceItem, PaymentMethod, type PaymentStatus} from "../../types/Invoice";
+import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "../../types/Invoice";
 import OfficeButton from "../../components/OfficeButton.vue";
 import router from "../../router";
 import StatusButton from "../../components/StatusButton.vue";
 import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
 import {useToast} from "primevue/usetoast";
 import {useCustomerStore} from "../../stores/customers";
-
-const customerStore = useCustomerStore();
 import {useInvoiceStore} from "../../stores/invoices";
 import OfficeIconButton from "../../components/OfficeIconButton.vue";
 import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
@@ -17,8 +15,9 @@ import {UtilsService} from "../../service/UtilsService.ts";
 import type {AxiosError, AxiosResponse} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
 import {FinanceService} from "../../service/FinanceService.ts";
-import type {Customer} from "@/types/Customer.ts";
+import type {Customer} from "../../types/Customer.ts";
 
+const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
 const toast = useToast();
 
@@ -68,16 +67,16 @@ const changeStatusConfirmationMessage = computed(() => {
     return `Czy chcesz zmienić status faktury nr <b>${
         invoiceTemp.value.invoiceNumber
     }</b> na <b>${
-        invoiceTemp.value.paymentStatus === "PAID"
-            ? "Do zapłaty"
-            : "Zapłacony"
+         invoiceTemp.value.paymentStatus.toString() === UtilsService.getEnumKeyByValue(PaymentStatus, PaymentStatus.PAID)
+            ? PaymentStatus.TO_PAY
+            : PaymentStatus.PAID
     }</b>?`;
   return "No message";
 });
 const submitChangeStatus = async () => {
   console.log("submitChangeStatus()");
   if (invoiceTemp.value) {
-    let newStatus: PaymentStatus = invoiceTemp.value.paymentStatus === "PAID" ? "TO_PAY" : "PAID";
+    let newStatus: PaymentStatus = invoiceTemp.value.paymentStatus.toString() === "PAID" ? PaymentStatus.TO_PAY : PaymentStatus.PAID;
     await invoiceStore.updateInvoiceStatusDb(invoiceTemp.value.idInvoice, newStatus)
         .then(() => {
           toast.add({
@@ -132,7 +131,7 @@ const submitDelete = async () => {
           toast.add({
             severity: "error",
             summary: "Nie usunięto faktury nr: " + invoiceTemp.value?.invoiceNumber,
-            detail: reason.response.data.message,
+            detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
         })
@@ -159,7 +158,7 @@ const downloadPdf = (idInvoice: number, invoiceNumber:string) => {
         toast.add({
           severity: "error",
           summary: "Nie udało się utworzyć PDF dla faktury nr: " + invoiceNumber,
-          detail: reason.response.data.message,
+          detail: (reason?.response?.data as { message: string }).message,
           life: 5000,
         });
       });

@@ -14,6 +14,7 @@ import {UtilsService} from "../../service/UtilsService.ts";
 import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
 import type {AxiosError} from "axios";
 import moment from "moment";
+import type {Customer} from "../../types/Customer.ts";
 
 const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
@@ -27,8 +28,8 @@ const invoice = ref<Invoice>({
   invoiceNumber: "",
   sellDate: null,
   invoiceDate: null,
-  paymentMethod: UtilsService.getEnumKeyByValue(PaymentMethod, "przelew"),
-  paymentStatus: UtilsService.getEnumKeyByValue(PaymentStatus, "Do zapłaty"),
+  paymentMethod: PaymentMethod.TRANSFER,
+  paymentStatus: PaymentStatus.TO_PAY,
   paymentDate: null,
   otherInfo: "",
   invoiceItems: [],
@@ -136,7 +137,7 @@ async function newInvoice() {
     btnSaveDisabled.value = true;
     invoice.value.invoiceNumber = invoiceYear.value + "/" + invoiceNumber.value;
     const invoiceDate = moment(invoice.value.invoiceDate);
-    invoice.value.paymentDate = invoiceDate.add(paymentDeadline.value, 'day')
+    invoice.value.paymentDate = invoiceDate.add(paymentDeadline.value, 'day').toDate()
     await invoiceStore.addInvoiceDb(invoice.value)
         .then(() => {
           toast.add({
@@ -153,7 +154,7 @@ async function newInvoice() {
           toast.add({
             severity: "error",
             summary: "Błąd podczas zapisu faktury.",
-            detail: reason.response.data.message,
+            detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
         }).finally(() => btnSaveDisabled.value = false);
@@ -189,7 +190,7 @@ async function editInvoice() {
           toast.add({
             severity: "error",
             summary: "Błąd podczas edycji faktury.",
-            detail: reason.response.data.message,
+            detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
         })
@@ -417,8 +418,8 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateScreenSize);
 });
 
-const getCustomerLabel = (option) =>{
-  console.log("getCustomerLabel",option);
+const getCustomerLabel = (option: Customer) =>{
+  // console.log("getCustomerLabel",option);
   return `${option.name} ${option.firstName}`;
 }
 const paymentMethods = Object.keys(PaymentMethod).map((key) => ({

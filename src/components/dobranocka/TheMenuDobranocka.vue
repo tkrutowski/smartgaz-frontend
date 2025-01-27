@@ -17,7 +17,12 @@ const items = ref([
     icon: 'pi pi-fw pi-clipboard',
     disabled: !authorizationStore.hasAccessDobranocka,
     command: () => {
-      router.push({name: 'DobranockaHome'})
+      if (window.location.href.includes(router.resolve({ name: 'DobranockaHome' }).href)) {
+        const redirect = JSON.stringify({ name: 'DobranockaHome' })
+        router.push({ path: '/refresh', query: { redirect: redirect } })
+      } else {
+        router.push({ name: 'DobranockaHome' })
+      }
     },
   },
   {
@@ -39,7 +44,12 @@ const items = ref([
         label: "Lista klientów",
         icon: "pi pi-fw pi-bars",
         command: () => {
-          router.push({name: "Customers"});
+          if (window.location.href.includes(router.resolve({ name: 'Customers' }).href)) {
+            const redirect = JSON.stringify({ name: 'Customers' })
+            router.push({ path: '/refresh', query: { redirect: redirect } })
+          } else {
+            router.push({ name: 'Customers' })
+          }
         },
       },
     ],
@@ -63,7 +73,12 @@ const items = ref([
         label: "Lista faktur",
         icon: "pi pi-fw pi-list",
         command: () => {
-          router.push({name: "Invoices"});
+          if (window.location.href.includes(router.resolve({ name: 'Invoices' }).href)) {
+            const redirect = JSON.stringify({ name: 'Invoices' })
+            router.push({ path: '/refresh', query: { redirect: redirect } })
+          } else {
+            router.push({ name: 'Invoices' })
+          }
         },
       },
       {
@@ -98,7 +113,12 @@ const items = ref([
         label: 'Lista pokoi',
         icon: 'pi pi-fw pi-list',
         command: () => {
-          router.push({name: 'Rooms'})
+          if (window.location.href.includes(router.resolve({ name: 'Rooms' }).href)) {
+            const redirect = JSON.stringify({ name: 'Rooms' })
+            router.push({ path: '/refresh', query: { redirect: redirect } })
+          } else {
+            router.push({ name: 'Rooms' })
+          }
         },
       },
     ],
@@ -121,7 +141,12 @@ const items = ref([
         label: 'Lista rezerwacji',
         icon: 'pi pi-fw pi-list',
         command: () => {
-          router.push({name: 'Reservations'})
+          if (window.location.href.includes(router.resolve({ name: 'Reservations' }).href)) {
+            const redirect = JSON.stringify({ name: 'Reservations' })
+            router.push({ path: '/refresh', query: { redirect: redirect } })
+          } else {
+            router.push({ name: 'Reservations' })
+          }
         },
       },
     ],

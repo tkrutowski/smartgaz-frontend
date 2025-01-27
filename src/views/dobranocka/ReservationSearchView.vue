@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {useRoomStore} from "../../stores/rooms.ts";
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import OfficeButton from "../../components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
 import type {AxiosError} from "axios";
@@ -15,12 +15,13 @@ import {
   type Room
 } from "../../types/Room.ts";
 import {UtilsService} from "../../service/UtilsService.ts";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
 import {useReservationStore} from "../../stores/reservation.ts";
 import {useCustomerStore} from "../../stores/customers";
-import type {Customer} from "@/types/Customer.ts";
+import type {Customer} from "../../types/Customer.ts";
 import moment from "moment";
-import {RentService} from "@/service/RentService.ts";
+import {RentService} from "../../service/RentService.ts";
+import {Button} from "primevue";
+import router from "../../router";
 
 const customerStore = useCustomerStore();
 const reservationStore = useReservationStore();
@@ -35,12 +36,12 @@ const selectedCustomer = ref<Customer | null>(null);
 
 const isSearchBtnDisabled = computed(() => {
   return (
-      roomStore.loadingReservation ||
+      reservationStore.loadingReservation ||
       checkin.value == null || checkout.value == null || numberOfBeds.value <= 0 || calculateRentPeriod.value.toString().startsWith("-")
   );
 });
 
-const toggleBedSelection = (bed) => {
+const toggleBedSelection = (bed: Bed) => {
   if (selectedBeds.value.includes(bed)) {
     selectedBeds.value = selectedBeds.value.filter((b) => b.id !== bed.id);
   } else {
@@ -73,10 +74,10 @@ const calculateRentPeriod = computed(() => {
 
     if (months > 0 && days === 0) {
       // Jeśli są pełne miesiące bez dodatkowych dni
-      return `${months} mc`;
+      return `${UtilsService.getMonthLabel(months)}`;
     } else if (months > 0 && days > 0) {
       // Jeśli są pełne miesiące i dodatkowe dni
-      return `${months} mc i ${days} dni`;
+      return `${UtilsService.getMonthLabel(months)} i ${days} dni`;
     } else {
       // Jeśli nie ma pełnych miesięcy, tylko dni
       const totalDays = end.diff(start, 'days');
@@ -125,7 +126,7 @@ const calculateNetSum = (() => {
 //SEARCH
 //
 function findAvailable() {
-  reservationStore.getAvailableBedsFromDb(checkin.value, checkout.value, numberOfBeds.value)
+  reservationStore.getAvailableBedsFromDb(checkin.value!, checkout.value!, 0)
       .then((rooms: Room[]) => {
         if (rooms.length === 0) {
           toast.add({
@@ -141,7 +142,7 @@ function findAvailable() {
     toast.add({
       severity: "error",
       summary: "Błąd podczas wyszukiwania łóżek.",
-      detail: reason.response.data.message,
+      detail: (reason?.response?.data as { message: string }).message,
       life: 5000,
     });
   })
@@ -151,11 +152,11 @@ function findAvailable() {
 // SAVE
 //
 const reservationInProgress = ref<boolean>(false);
-const buttonToFirstStep = ref(null)
 
 function saveReservation() {
   reservationInProgress.value = true;
   const reservation: Reservation = {
+    id:0,
     customer: selectedCustomer.value,
     advance: advance.value,
     startDate: checkin.value,
@@ -165,6 +166,7 @@ function saveReservation() {
     info: info.value,
     beds: selectedBeds.value.map((item: Bed) => {
       const dto: ReservationBed = {
+        id:0,
         bed: item,
         priceDay: item.priceDay,
         priceMonth: item.priceMonth
@@ -184,14 +186,15 @@ function saveReservation() {
         selectedCustomer.value = null;
         selectedBeds.value = [];
         availableBeds.value.clear();
-        if (buttonToFirstStep.value) {
-          buttonToFirstStep.value.$el.click(); // Symulacja kliknięcia
+        if (window.location.href.includes(router.resolve({ name: 'ReservationSearch' }).href)) {
+          const redirect = JSON.stringify({ name: 'ReservationSearch' })
+          router.push({ path: '/refresh', query: { redirect: redirect } })
         }
       }).catch((reason: AxiosError) => {
     toast.add({
       severity: "error",
       summary: "Błąd podczas dodawania rezerwacji.",
-      detail: reason.response.data.message,
+      detail: (reason?.response?.data as { message: string }).message,
       life: 5000,
     });
   }).finally(() => {
@@ -207,18 +210,7 @@ onMounted(async () => {
   customerStore.getCustomers();
 });
 
-//
-//-----------------------------------------------------ERROR-------------------------------------------------------
-//
 
-const showError = (msg: string) => {
-  toast.add({
-    severity: "error",
-    summary: "Error Message",
-    detail: msg,
-    life: 5000,
-  });
-};
 const showErrorCustomer = () => {
   return selectedCustomer.value == null;
 };
@@ -241,13 +233,6 @@ onUnmounted(() => {
 
 <template>
   <TheMenuDobranocka/>
-  <ConfirmationDialog
-      v-model:visible="showDeleteConfirmationDialog"
-      :msg="deleteConfirmationMessage"
-      label="Usuń"
-      @save="submitDelete"
-      @cancel="showDeleteConfirmationDialog = false"
-  />
   <div class="flex flex-row gap-4 mt-4 justify-center">
     <FloatLabel variant="on">
       <DatePicker v-model="checkin" inputId="checkin" showIcon iconDisplay="input" date-format="yy-mm-dd"/>
@@ -284,7 +269,7 @@ onUnmounted(() => {
                 <div class="flex flex-row  items-center justify-center gap-2">
                   <Checkbox :checked="selectedBeds.includes(bed)"
                             @change="toggleBedSelection(bed)" :value="bed"/>
-                  <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.type) === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+                  <svg v-if="bed.type.toString() === UtilsService.getEnumKeyByValue(BedType, BedType.SINGLE)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                        id="single-bed"
                        class="w-12 h-12 fill-current text-black dark:text-white">
                     <path
@@ -297,8 +282,8 @@ onUnmounted(() => {
                   </svg>
 
                   <span class="text-xl">{{ bed.name }}</span>
-                  <Tag :severity="RentService.getSeverity(bed.status)"
-                       :value="UtilsService.getEnumValueByKey(BedStatus, bed.status)"></Tag>
+                  <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)"
+                       :value="UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)"></Tag>
                 </div>
               </div>
             </div>
@@ -339,7 +324,7 @@ onUnmounted(() => {
             </div>
           </div>
           <div class="flex pt-6 justify-between">
-            <Button ref="buttonToFirstStep" label="Poprzednia" severity="secondary" icon="pi pi-arrow-left"
+            <Button label="Poprzednia" severity="secondary" icon="pi pi-arrow-left"
                     @click="activateCallback('1')"/>
             <Button label="Następna" icon="pi pi-arrow-right" iconPos="right" :disabled="selectedCustomer == null"
                     @click="activateCallback('3')"/>
@@ -432,8 +417,8 @@ onUnmounted(() => {
             <DataTable :value="selectedBeds" size="small" dataKey="id" class="w-full md:w-1/3">
               <!-- ROOM -->
               <Column header="Pokój" class="max-w-36">
-                <template #body="{ data, field }">
-                  <p>{{ roomStore.getRoomByBed(data['id']).name }}</p>
+                <template #body="{ data }">
+                  <p>{{ roomStore.getRoomByBed(data['id'])?.name }}</p>
                 </template>
               </Column>
 
@@ -443,14 +428,14 @@ onUnmounted(() => {
 
               <!-- QUANTITY -->
               <Column header="Okres najmu">
-                <template #body="{ data, field }">
+                <template #body="{ }">
                   <p> {{ calculateRentPeriod }}</p>
                 </template>
               </Column>
 
               <!-- AMOUNT NET-->
               <Column header="Cena netto">
-                <template #body="{ data, field }">
+                <template #body="{ data }">
                   <div style="text-align: center">
                     {{ UtilsService.formatCurrency(calculateNet(data)) }}
                   </div>

@@ -22,7 +22,6 @@ declare module 'vue' {
     DatePicker: typeof import('primevue/datepicker')['default']
     Dialog: typeof import('primevue/dialog')['default']
     Divider: typeof import('primevue/divider')['default']
-    Fieldset: typeof import('primevue/fieldset')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
     IconField: typeof import('primevue/iconfield')['default']
     ImageButton: typeof import('./src/components/ImageButton.vue')['default']
@@ -43,7 +42,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Row: typeof import('primevue/row')['default']
     Select: typeof import('primevue/select')['default']
-    Slider: typeof import('primevue/slider')['default']
     StatusButton: typeof import('./src/components/StatusButton.vue')['default']
     Step: typeof import('primevue/step')['default']
     StepList: typeof import('primevue/steplist')['default']
@@ -56,7 +54,6 @@ declare module 'vue' {
     TheMenu: typeof import('./src/components/TheMenu.vue')['default']
     TheMenuDobranocka: typeof import('./src/components/dobranocka/TheMenuDobranocka.vue')['default']
     ThemeSwitcher: typeof import('./src/components/ThemeSwitcher.vue')['default']
-    Toast: typeof import('primevue/toast')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
   }
 }

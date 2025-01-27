@@ -55,7 +55,7 @@ async function saveCompany() {
           toast.add({
             severity: "error",
             summary: "Błąd podczas aktualizacji danych firmy.",
-            detail: reason.response.data.message,
+            detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
         }).finally(() => {

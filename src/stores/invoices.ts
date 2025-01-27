@@ -43,7 +43,7 @@ export const useInvoiceStore = defineStore("invoice", {
                 console.log("Downloaded Invoices ", this.invoices.length);
             }
             const result = this.invoices.filter(
-                (invoice) => invoice.idCustomer === customerId
+                (invoice) => invoice.customer?.id === customerId
             );
             console.log("geCustomerInvoices() size: ", result.length);
             return result;
@@ -207,7 +207,7 @@ export const useInvoiceStore = defineStore("invoice", {
             console.log("getInvoicesFromDb()", invoice);
             return {
                 ...invoice,
-                invoiceDate: new Date(invoice.invoiceDate),
+                invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate) : null,
                 sellDate: invoice.sellDate ? new Date(invoice.sellDate) : null,
                 paymentDate: invoice.paymentDate ? new Date(invoice.paymentDate) : null,
                 // paymentMethod: PaymentMethod[invoice.paymentMethod as keyof typeof PaymentMethod] || invoice.paymentMethod,

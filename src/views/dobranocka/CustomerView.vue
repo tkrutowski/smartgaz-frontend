@@ -83,7 +83,7 @@ async function newCustomer() {
         toast.add({
           severity: "error",
           summary: "Błąd podczas dodawania klienta.",
-          detail: reason.response.data.message,
+          detail: (reason?.response?.data as { message: string }).message,
           life: 5000,
         });
       }
@@ -121,7 +121,7 @@ async function editCustomer() {
           toast.add({
             severity: "error",
             summary: "Błąd podczas dodawania klienta.",
-            detail: reason.response.data.message,
+            detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
         }).finally(() => {

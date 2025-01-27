@@ -84,7 +84,7 @@ const saveRole = async () => {
       toast.add({
         severity: 'error',
         summary: 'Błąd podczas dodawania upawnień.',
-        detail: reason.response.data.message,
+        detail: (reason?.response?.data as { message: string }).message,
         life: 5000,
       })
     })
@@ -121,7 +121,7 @@ const deletePrivilege = async () => {
       toast.add({
         severity: 'error',
         summary: `Błąd podczas usuwanie upawnienia: ${selectedRole.value?.name}`,
-        detail: reason.response.data.message,
+        detail: (reason?.response?.data as { message: string }).message,
         life: 5000,
       })
     })

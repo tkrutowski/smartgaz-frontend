@@ -82,8 +82,8 @@ export const UtilsService = {
 
     getEnumKeyByValue<T>(enumObject: T, value: string): keyof T | undefined {
         console.log("getEnumKeyByValue - enumObject", enumObject, "value", value);
-        const result = Object.keys(enumObject).find((key) => {
-            const enumValue = enumObject[key as keyof T];
+        const result:keyof T | undefined = Object.keys(enumObject as Object).find((key: string) => {
+            const enumValue = enumObject[key as keyof T] as string;
             console.log(`Comparing enumValue: ${enumValue} with value: ${value}`);
             return enumValue === value;
         }) as keyof T | undefined;
@@ -105,4 +105,29 @@ export const UtilsService = {
         // console.log("getEnumKeyByValue - result", result);
         // return result
     },
+
+    getMonthLabel(count: number): string {
+    if (count < 0) {
+        throw new Error("Liczba miesięcy nie może być ujemna.");
+    }
+
+    const lastDigit = count % 10;
+    const penultimateDigit = Math.floor((count % 100) / 10);//przedostatnia
+
+    if (penultimateDigit === 1) {
+        // Liczby 11-19
+        return `${count} miesięcy`;
+    }
+
+    if (lastDigit === 1) {
+        // Liczby zakończone na 1, ale nie na 11
+        return `${count} miesiąc`;
+    } else if (lastDigit >= 2 && lastDigit <= 4) {
+        // Liczby zakończone na 2, 3, 4, ale nie na 12, 13, 14
+        return `${count} miesiące`;
+    }
+
+    // Wszystkie inne przypadki (np. 0, 5-9)
+    return `${count} miesięcy`;
+}
 }

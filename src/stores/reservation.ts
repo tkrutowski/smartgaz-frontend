@@ -10,8 +10,6 @@ import {
     type Room
 } from "../types/Room.ts";
 import moment from "moment/moment";
-import {useCustomerStore} from "./customers.ts";
-import type {Invoice, InvoiceDto} from "../types/Invoice.ts";
 
 export const useReservationStore = defineStore('reservation', {
     state: () => ({
@@ -54,6 +52,7 @@ export const useReservationStore = defineStore('reservation', {
         //
         //GET AVAILABLE BEDS FROM DB
         //
+        //TODO remove homManyBeds
         async getAvailableBedsFromDb(start: Date, end: Date, howManyBeds: number): Promise<Room[]> {
             console.log('START - getAvailableBedsFromDb()', start.toLocaleDateString())
             this.loadingReservation = true
@@ -141,25 +140,25 @@ export const useReservationStore = defineStore('reservation', {
         //
         //UPDATE ROOM
         //
-        async updateRoomDb(room: Room) {
-            console.log('START - updateRoomDb()', room)
-            const payload = {
-                ...room,
-                beds: room.beds.map(bed => ({
-                    ...bed,
-                    type: Object.keys(BedType).find(
-                        key => BedType[key as keyof typeof BedType] === bed.type
-                    ),
-                    status: Object.keys(BedStatus).find(
-                        key => BedStatus[key as keyof typeof BedStatus] === bed.status
-                    )
-                }))
-            };
-            const response = await httpCommon.put(`/v1/dobranocka/room`, payload)
-            const index = this.rooms.findIndex((r: Room) => r.id === room.id)
-            if (index !== -1) this.rooms.splice(index, 1, this.convertResponse(response.data))
-            console.log('END - updateRoomDb()')
-        },
+        // async updateRoomDb(room: Room) {
+        //     console.log('START - updateRoomDb()', room)
+        //     const payload = {
+        //         ...room,
+        //         beds: room.beds.map(bed => ({
+        //             ...bed,
+        //             type: Object.keys(BedType).find(
+        //                 key => BedType[key as keyof typeof BedType] === bed.type
+        //             ),
+        //             status: Object.keys(BedStatus).find(
+        //                 key => BedStatus[key as keyof typeof BedStatus] === bed.status
+        //             )
+        //         }))
+        //     };
+        //     const response = await httpCommon.put(`/v1/dobranocka/room`, payload)
+        //     const index = this.rooms.findIndex((r: Room) => r.id === room.id)
+        //     if (index !== -1) this.rooms.splice(index, 1, this.convertResponse(response.data))
+        //     console.log('END - updateRoomDb()')
+        // },
 
         // convertResponse(bed: Bed) {
         //     return {

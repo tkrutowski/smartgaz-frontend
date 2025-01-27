@@ -36,10 +36,10 @@ export interface Bed {
 
 export interface Reservation {
   id: number
-  customer: Customer
+  customer: Customer | null
   beds: ReservationBed[]
-  startDate: Date
-  endDate: Date
+  startDate: Date | null
+  endDate: Date | null
   reservationStatus:ReservationStatus
   advance: number
   deposit: number
