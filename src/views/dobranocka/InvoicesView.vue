@@ -475,9 +475,3 @@ const getCustomerLabel = (customer:Customer) =>{
     </DataTable>
   </Panel>
 </template>
-
-<style scoped>
-.p-datatable .p-datatable-tbody > tr > td {
-  text-align: center !important;
-}
-</style>

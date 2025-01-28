@@ -22,6 +22,7 @@ import RoomsView from "../views/dobranocka/RoomsView.vue";
 import RoomView from "../views/dobranocka/RoomView.vue";
 import ReservationSearchView from "../views/dobranocka/ReservationSearchView.vue";
 import ReservationsView from "../views/dobranocka/ReservationsView.vue";
+import CalendarView from "../views/dobranocka/CalendarView.vue";
 
 const routes = [
   {
@@ -117,6 +118,11 @@ const routes = [
     path: '/dobranocka/reservation/all',
     name: 'Reservations',
     component: ReservationsView,
+  },
+  {
+    path: '/dobranocka/calendar',
+    name: 'Calendar',
+    component: CalendarView,
   },
 ]
 

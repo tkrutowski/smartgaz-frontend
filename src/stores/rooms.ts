@@ -10,9 +10,8 @@ export const useRoomStore = defineStore('room', {
 
     //getters = computed
     getters: {
-        // getSortedSeries: (state) =>
-        //     state.series.filter(serie => serie.id != 2)
-        //         .sort((a, b) => a.title.localeCompare(b.title)),
+        getAllBeds: (state) =>
+            state.rooms.flatMap((room: Room) => room.beds)
     },
 
     //actions = metody w komponentach

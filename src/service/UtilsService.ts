@@ -83,7 +83,7 @@ export const UtilsService = {
 
     getEnumKeyByValue<T>(enumObject: T, value: string): keyof T | undefined {
         console.log("getEnumKeyByValue - enumObject", enumObject, "value", value);
-        const result:keyof T | undefined = Object.keys(enumObject as Object).find((key: string) => {
+        const result: keyof T | undefined = Object.keys(enumObject as Object).find((key: string) => {
             const enumValue = enumObject[key as keyof T] as string;
             console.log(`Comparing enumValue: ${enumValue} with value: ${value}`);
             return enumValue === value;
@@ -91,11 +91,7 @@ export const UtilsService = {
 
         console.log("getEnumKeyByValue - result", result);
         return result;
-    // }
-
-
-
-
+        // }
 
 
         // console.log("getEnumKeyByValue", enumObject, value);
@@ -108,27 +104,47 @@ export const UtilsService = {
     },
 
     getMonthLabel(count: number): string {
-    if (count < 0) {
-        throw new Error("Liczba miesięcy nie może być ujemna.");
-    }
+        if (count < 0) {
+            throw new Error("Liczba miesięcy nie może być ujemna.");
+        }
 
-    const lastDigit = count % 10;
-    const penultimateDigit = Math.floor((count % 100) / 10);//przedostatnia
+        const lastDigit = count % 10;
+        const penultimateDigit = Math.floor((count % 100) / 10);//przedostatnia
 
-    if (penultimateDigit === 1) {
-        // Liczby 11-19
+        if (penultimateDigit === 1) {
+            // Liczby 11-19
+            return `${count} miesięcy`;
+        }
+
+        if (lastDigit === 1) {
+            // Liczby zakończone na 1, ale nie na 11
+            return `${count} miesiąc`;
+        } else if (lastDigit >= 2 && lastDigit <= 4) {
+            // Liczby zakończone na 2, 3, 4, ale nie na 12, 13, 14
+            return `${count} miesiące`;
+        }
+
+        // Wszystkie inne przypadki (np. 0, 5-9)
         return `${count} miesięcy`;
-    }
+    },
 
-    if (lastDigit === 1) {
-        // Liczby zakończone na 1, ale nie na 11
-        return `${count} miesiąc`;
-    } else if (lastDigit >= 2 && lastDigit <= 4) {
-        // Liczby zakończone na 2, 3, 4, ale nie na 12, 13, 14
-        return `${count} miesiące`;
-    }
+     hexToRgba (hex: string, alpha: number): string  {
+        let r = 0, g = 0, b = 0;
 
-    // Wszystkie inne przypadki (np. 0, 5-9)
-    return `${count} miesięcy`;
-}
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+
+        if (hex.length === 3) {
+            r = parseInt(hex[0] + hex[0], 16);
+            g = parseInt(hex[1] + hex[1], 16);
+            b = parseInt(hex[2] + hex[2], 16);
+        } else if (hex.length === 6) {
+            r = parseInt(hex.substring(0, 2), 16);
+            g = parseInt(hex.substring(2, 4), 16);
+            b = parseInt(hex.substring(4, 6), 16);
+        }
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
 }

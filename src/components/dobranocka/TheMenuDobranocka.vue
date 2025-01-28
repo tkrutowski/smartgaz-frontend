@@ -156,6 +156,14 @@ const items = ref([
     label: 'Kalendarz',
     icon: 'pi pi-calendar',
     disabled: !authorizationStore.hasAccessDobranockaCalendar,
+    command: () => {
+      if (window.location.href.includes(router.resolve({ name: 'Calendar' }).href)) {
+        const redirect = JSON.stringify({ name: 'Calendar' })
+        router.push({ path: '/refresh', query: { redirect: redirect } })
+      } else {
+        router.push({ name: 'Calendar' })
+      }
+    },
   },
 ])
 </script>
