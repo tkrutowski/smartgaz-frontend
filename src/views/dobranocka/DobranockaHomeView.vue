@@ -15,7 +15,7 @@ const roomStore = useRoomStore();
 const allBeds = ref<Map<string, Bed[]>>(new Map<string, Bed[]>())
 
 function getBedReservationEndDate(bedToCheck: Bed): string | null {
-  const today = moment().startOf('day').toDate(); // Pobieramy dzisiejszą datę
+  const today = moment().startOf('day').toDate();
 
   // Sprawdzamy, czy łóżko jest aktualnie zajęte
   if (bedToCheck.status.toString() === UtilsService.getEnumKeyByValue(BedStatus, BedStatus.OCCUPIED)) {
@@ -28,7 +28,7 @@ function getBedReservationEndDate(bedToCheck: Bed): string | null {
             reservation.startDate !== null &&
             reservation.endDate !== null &&
             moment(reservation.startDate).toDate() <= today &&
-            moment(reservation.endDate).toDate() >= today // Rezerwacja obejmuje dzisiejszą datę
+            moment(reservation.endDate).toDate() >= today
         );
 
     // Jeśli brak aktywnej rezerwacji dla dzisiejszego dnia, zwracamy null
@@ -41,11 +41,35 @@ function getBedReservationEndDate(bedToCheck: Bed): string | null {
         .map(reservation => new Date(reservation.endDate!))
         .reduce((latest, current) => (current > latest ? current : latest));
 
-    // Zwracamy sformatowaną datę zakończenia rezerwacji
     return " do " + moment(latestEndDate).format("YYYY-MM-DD");
   }
-
   return null; // Jeśli łóżko nie jest zajęte
+}
+
+function getNextBedReservationStartDate(bedToCheck: Bed): string | null {
+  const today = moment().startOf('day').toDate();
+
+  // Sprawdzamy, czy łóżko NIE jest aktualnie zajęte
+  if (bedToCheck.status.toString() !== UtilsService.getEnumKeyByValue(BedStatus, BedStatus.OCCUPIED)) {
+    // Filtrujemy rezerwacje tylko dla tego łóżka, które mają datę rozpoczęcia w przyszłości
+    const futureReservations = reservationStore.reservations
+        .filter(reservation =>
+            reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed)
+                .some((bed: Bed) => bed.id === bedToCheck.id) &&
+            reservation.startDate !== null &&
+            moment(reservation.startDate).toDate() > today // Rezerwacja zaczyna się w przyszłości
+        );
+    // Jeśli brak przyszłych rezerwacji, zwracamy null
+    if (futureReservations.length === 0) {
+      return null;
+    }
+    // Znajdujemy najbliższą przyszłą datę rozpoczęcia rezerwacji
+    const earliestStartDate = futureReservations
+        .map(reservation => new Date(reservation.startDate!))
+        .reduce((earliest, current) => (current < earliest ? current : earliest));
+    return "(Zajęty od " + moment(earliestStartDate).format("YYYY-MM-DD") + ")";
+  }
+  return null; // Jeśli łóżko jest zajęte dzisiaj, nie sprawdzamy przyszłych rezerwacji
 }
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
@@ -83,7 +107,7 @@ onMounted(async () => {
 
             <span class="text-xl">{{ bed.name }}</span>
             <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)">
-                 {{UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)}} {{getBedReservationEndDate(bed)}}</Tag>
+                 {{UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)}} {{getBedReservationEndDate(bed)}} {{getNextBedReservationStartDate(bed)}}</Tag>
           </div>
         </div>
       </div>
