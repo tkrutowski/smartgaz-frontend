@@ -1,22 +1,59 @@
 <script setup lang="ts">
 import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import {type Bed, BedStatus, BedType, type Room} from "../../types/Room.ts";
+import {type Bed, BedStatus, BedType, type ReservationBed, type Room} from "@/types/Room.ts";
 import {onMounted, ref} from "vue";
-import {useCustomerStore} from "../../stores/customers";
-import {useRoomStore} from "../../stores/rooms.ts";
-import {RentService} from "../../service/RentService.ts";
-import {UtilsService} from "../../service/UtilsService.ts";
+import {useCustomerStore} from "@/stores/customers.ts";
+import {useRoomStore} from "@/stores/rooms.ts";
+import {useReservationStore} from "@/stores/reservation.ts";
+import {RentService} from "@/service/RentService.ts";
+import {UtilsService} from "@/service/UtilsService.ts";
+import moment from "moment";
 
+const reservationStore = useReservationStore();
 const customerStore = useCustomerStore();
 const roomStore = useRoomStore();
 const allBeds = ref<Map<string, Bed[]>>(new Map<string, Bed[]>())
 
+function getBedReservationEndDate(bedToCheck: Bed): string | null {
+  const today = moment().startOf('day').toDate(); // Pobieramy dzisiejszą datę
+
+  // Sprawdzamy, czy łóżko jest aktualnie zajęte
+  if (bedToCheck.status.toString() === UtilsService.getEnumKeyByValue(BedStatus, BedStatus.OCCUPIED)) {
+
+    // Filtrujemy rezerwacje tylko dla tego łóżka, które są aktywne dzisiaj
+    const bedReservations = reservationStore.reservations
+        .filter(reservation =>
+            reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed)
+                .some((bed: Bed) => bed.id === bedToCheck.id) &&
+            reservation.startDate !== null &&
+            reservation.endDate !== null &&
+            moment(reservation.startDate).toDate() <= today &&
+            moment(reservation.endDate).toDate() >= today // Rezerwacja obejmuje dzisiejszą datę
+        );
+
+    // Jeśli brak aktywnej rezerwacji dla dzisiejszego dnia, zwracamy null
+    if (bedReservations.length === 0) {
+      return null;
+    }
+
+    // Znajdujemy najpóźniejszą datę zakończenia aktywnej rezerwacji
+    const latestEndDate = bedReservations
+        .map(reservation => new Date(reservation.endDate!))
+        .reduce((latest, current) => (current > latest ? current : latest));
+
+    // Zwracamy sformatowaną datę zakończenia rezerwacji
+    return " do " + moment(latestEndDate).format("YYYY-MM-DD");
+  }
+
+  return null; // Jeśli łóżko nie jest zajęte
+}
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
 //
 onMounted(async () => {
   await roomStore.getRooms();
   await customerStore.getCustomers();
+  await reservationStore.refreshReservations()
   roomStore.rooms.forEach((room: Room) => allBeds.value.set(room.name, room.beds));
 });
 
@@ -45,8 +82,8 @@ onMounted(async () => {
             </svg>
 
             <span class="text-xl">{{ bed.name }}</span>
-            <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)"
-                 :value="UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)"></Tag>
+            <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)">
+                 {{UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)}} {{getBedReservationEndDate(bed)}}</Tag>
           </div>
         </div>
       </div>
