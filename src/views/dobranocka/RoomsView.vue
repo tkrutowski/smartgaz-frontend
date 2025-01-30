@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {useRoomStore} from "../../stores/rooms.ts";
-import RoomDisplay from "../../components/dobranocka/RoomDisplay.vue";
-import type {Room} from "../../types/Room"
+import {useRoomStore} from "@/stores/rooms.ts";
+import RoomDisplay from "@/components/dobranocka/RoomDisplay.vue";
+import type {Room} from "@/types/Room"
 import {computed, onMounted, ref} from "vue";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import type {AxiosError} from "axios";
 import {useToast} from "primevue/usetoast";
 const roomStore = useRoomStore();

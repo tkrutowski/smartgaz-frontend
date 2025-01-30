@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 import moment from "moment";
 import "moment/dist/locale/pl"; // Import lokalizacji polskiej
 import {useRoomStore} from "@/stores/rooms.ts";

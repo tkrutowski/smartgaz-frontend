@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import OfficeButton from "../../components/OfficeButton.vue";
+import OfficeButton from "@/components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
 import type {AxiosError} from "axios";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import type {Company} from "../../types/Company.ts";
-import {useSettingsStore} from "../../stores/settings.ts";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
+import type {Company} from "@/types/Company.ts";
+import {useSettingsStore} from "@/stores/settings.ts";
 
 
 const settingStore = useSettingsStore();

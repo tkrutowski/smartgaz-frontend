@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import {useRoomStore} from "../../stores/rooms.ts";
+import {useRoomStore} from "@/stores/rooms.ts";
 import {useRoute} from "vue-router";
 import {computed, onMounted, ref} from "vue";
-import OfficeButton from "../../components/OfficeButton.vue";
+import OfficeButton from "@/components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
-import router from "../../router";
+import router from "@/router";
 import type {AxiosError} from "axios";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import type {Bed, Room} from "../../types/Room.ts";
-import {BedStatus, BedType} from "../../types/Room.ts";
-import {UtilsService} from "../../service/UtilsService.ts";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
+import type {Bed, Room} from "@/types/Room.ts";
+import {BedStatus, BedType} from "@/types/Room.ts";
+import {UtilsService} from "@/service/UtilsService.ts";
 import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
-import {RentService} from "../../service/RentService.ts";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {RentService} from "@/service/RentService.ts";
 
 const roomStore = useRoomStore();
 const route = useRoute();

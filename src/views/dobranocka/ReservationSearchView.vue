@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {useRoomStore} from "../../stores/rooms.ts";
+import {useRoomStore} from "@/stores/rooms.ts";
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import OfficeButton from "../../components/OfficeButton.vue";
+import OfficeButton from "@/components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
 import type {AxiosError} from "axios";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 import {
   type Bed,
   BedStatus,
@@ -13,15 +13,15 @@ import {
   type ReservationBed,
   ReservationStatus,
   type Room
-} from "../../types/Room.ts";
-import {UtilsService} from "../../service/UtilsService.ts";
-import {useReservationStore} from "../../stores/reservation.ts";
-import {useCustomerStore} from "../../stores/customers";
-import type {Customer} from "../../types/Customer.ts";
+} from "@/types/Room.ts";
+import {UtilsService} from "@/service/UtilsService.ts";
+import {useReservationStore} from "@/stores/reservation.ts";
+import {useCustomerStore} from "@/stores/customers.ts";
+import type {Customer} from "@/types/Customer.ts";
 import moment from "moment";
-import {RentService} from "../../service/RentService.ts";
+import {RentService} from "@/service/RentService.ts";
 import {Button} from "primevue";
-import router from "../../router";
+import router from "@/router";
 
 const customerStore = useCustomerStore();
 const reservationStore = useReservationStore();
@@ -162,7 +162,7 @@ function saveReservation() {
     startDate: checkin.value,
     endDate: checkout.value,
     deposit: deposit.value,
-    reservationStatus: advance.value > 0 ? ReservationStatus.ADVANCE_PAID : ReservationStatus.NO_PAYMENT,
+    reservationStatus: advance.value === 0 ? ReservationStatus.NO_PAYMENT :(advance.value > 0 && advance.value < calculateNetSum()) ? ReservationStatus.ADVANCE_PAID : ReservationStatus.FULLY_PAID,
     info: info.value,
     beds: selectedBeds.value.map((item: Bed) => {
       const dto: ReservationBed = {
@@ -269,7 +269,7 @@ onUnmounted(() => {
                 <div class="flex flex-row  items-center justify-center gap-2">
                   <Checkbox :checked="selectedBeds.includes(bed)"
                             @change="toggleBedSelection(bed)" :value="bed"/>
-                  <svg v-if="bed.type.toString() === UtilsService.getEnumKeyByValue(BedType, BedType.SINGLE)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+                  <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                        id="single-bed"
                        class="w-12 h-12 fill-current text-black dark:text-white">
                     <path
@@ -339,7 +339,7 @@ onUnmounted(() => {
                  v-for="(bed) in selectedBeds" key="bed.id">
 
               <div class="flex flex-row  items-center justify-center gap-2">
-                <svg v-if="bed.type === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+                <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                      id="single-bed"
                      class="w-12 h-12 fill-current text-black dark:text-white">
                   <path
@@ -355,13 +355,13 @@ onUnmounted(() => {
 
                 <FloatLabel variant="on">
                   <InputNumber v-model="bed.priceDay" inputId="day" mode="currency" currency="PLN" locale="pl-PL"
-                               @focus="UtilsService.selectText" fluid/>
+                               @focus="UtilsService.selectText" fluid :min="0"/>
                   <label for="day" class="font-bold block mb-1 ml-1"> Cena netto/dzień </label>
                 </FloatLabel>
 
                 <FloatLabel variant="on">
                   <InputNumber v-model="bed.priceMonth" inputId="month" mode="currency" currency="PLN" locale="pl-PL"
-                               fluid @focus="UtilsService.selectText"/>
+                               fluid @focus="UtilsService.selectText" :min="0"/>
                   <label for="month" class="font-bold block mb-1 ml-1"> Cena netto/miesiąc </label>
                 </FloatLabel>
 

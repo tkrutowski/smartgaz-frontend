@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import {useCustomerStore} from "../../stores/customers";
-import {useInvoiceStore} from "../../stores/invoices";
+import {useCustomerStore} from "@/stores/customers.ts";
+import {useInvoiceStore} from "@/stores/invoices.ts";
 import {useRoute} from "vue-router";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "../../types/Invoice";
-import OfficeButton from "../../components/OfficeButton.vue";
+import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "@/types/Invoice.ts";
+import OfficeButton from "@/components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
-import router from "../../router";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
-import {UtilsService} from "../../service/UtilsService.ts";
+import router from "@/router";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
+import {UtilsService} from "@/service/UtilsService.ts";
 import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
 import type {AxiosError} from "axios";
 import moment from "moment";
-import type {Customer} from "../../types/Customer.ts";
+import type {Customer} from "@/types/Customer.ts";
 
 const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
 const route = useRoute();
 
 const toast = useToast();
-// const selectedCustomer = ref<Customer | null>(null);
 const invoice = ref<Invoice>({
   idInvoice: 0,
   customer: null,

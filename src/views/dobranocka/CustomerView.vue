@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import {useCustomerStore} from "../../stores/customers";
+import {useCustomerStore} from "@/stores/customers.ts";
 import {useRoute} from "vue-router";
 import {computed, onMounted, ref} from "vue";
-import type {Customer} from "../../types/Customer";
-import OfficeButton from "../../components/OfficeButton.vue";
+import type {Customer} from "@/types/Customer.ts";
+import OfficeButton from "@/components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
-import router from "../../router";
+import router from "@/router";
 import type {AxiosError} from "axios";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 
 const customerStore = useCustomerStore();
 const route = useRoute();

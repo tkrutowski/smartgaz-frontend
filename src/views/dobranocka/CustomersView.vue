@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {FilterMatchMode} from '@primevue/core/api';
-import OfficeButton from "../../components/OfficeButton.vue";
-import router from "../../router";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
-import type {Customer} from "../../types/Customer";
-import {useCustomerStore} from "../../stores/customers";
+import OfficeButton from "@/components/OfficeButton.vue";
+import router from "@/router";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import type {Customer} from "@/types/Customer";
+import {useCustomerStore} from "@/stores/customers";
 import {useToast} from "primevue/usetoast";
 import type {DataTablePageEvent} from "primevue/datatable";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 import type {AxiosError} from "axios";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 
 const customerStore = useCustomerStore();
 const toast = useToast();

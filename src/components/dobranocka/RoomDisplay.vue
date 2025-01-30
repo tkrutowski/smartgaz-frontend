@@ -1,11 +1,11 @@
 <script setup lang="ts">
 
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 import {computed, type PropType} from "vue";
-import {BedStatus, BedType, type Room} from "../../types/Room.ts";
-import {UtilsService} from "../../service/UtilsService.ts";
-import router from "../../router";
-import {RentService} from "../../service/RentService.ts";
+import {BedStatus, BedType, type Room} from "@/types/Room.ts";
+import {UtilsService} from "@/service/UtilsService.ts";
+import router from "@/router";
+import {RentService} from "@/service/RentService.ts";
 
 const props = defineProps({
   room: {

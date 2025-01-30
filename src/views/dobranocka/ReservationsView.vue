@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api';
-import {useRoomStore} from "../../stores/rooms.ts";
-import OfficeButton from "../../components/OfficeButton.vue";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
+import {useRoomStore} from "@/stores/rooms.ts";
+import OfficeButton from "@/components/OfficeButton.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {useToast} from "primevue/usetoast";
-import {useCustomerStore} from "../../stores/customers";
-import {useReservationStore} from "../../stores/reservation.ts";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import {UtilsService} from "../../service/UtilsService.ts";
+import {useCustomerStore} from "@/stores/customers.ts";
+import {useReservationStore} from "@/stores/reservation.ts";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
+import {UtilsService} from "@/service/UtilsService.ts";
 import type {AxiosError} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
-import {RentService} from "../../service/RentService.ts";
-import {BedType, type Reservation, type ReservationBed, ReservationStatus} from "../../types/Room.ts";
-import type {Customer} from "../../types/Customer.ts";
+import {RentService} from "@/service/RentService.ts";
+import {BedType, type Reservation, type ReservationBed, ReservationStatus} from "@/types/Room.ts";
+import type {Customer} from "@/types/Customer.ts";
 import moment from "moment/moment";
+import router from "@/router";
 
 const roomStore = useRoomStore();
 const customerStore = useCustomerStore();

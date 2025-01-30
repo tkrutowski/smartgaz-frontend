@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 import {type Bed, BedStatus, BedType, type ReservationBed, type Room} from "@/types/Room.ts";
 import {onMounted, ref} from "vue";
 import {useCustomerStore} from "@/stores/customers.ts";

@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api';
-import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "../../types/Invoice";
-import OfficeButton from "../../components/OfficeButton.vue";
-import router from "../../router";
-import StatusButton from "../../components/StatusButton.vue";
-import ConfirmationDialog from "../../components/ConfirmationDialog.vue";
+import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "@/types/Invoice.ts";
+import OfficeButton from "@/components/OfficeButton.vue";
+import router from "@/router";
+import StatusButton from "@/components/StatusButton.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {useToast} from "primevue/usetoast";
-import {useCustomerStore} from "../../stores/customers";
-import {useInvoiceStore} from "../../stores/invoices";
-import OfficeIconButton from "../../components/OfficeIconButton.vue";
-import TheMenuDobranocka from "../../components/dobranocka/TheMenuDobranocka.vue";
-import {UtilsService} from "../../service/UtilsService.ts";
+import {useCustomerStore} from "@/stores/customers.ts";
+import {useInvoiceStore} from "@/stores/invoices.ts";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
+import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
+import {UtilsService} from "@/service/UtilsService.ts";
 import type {AxiosError, AxiosResponse} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
-import {FinanceService} from "../../service/FinanceService.ts";
-import type {Customer} from "../../types/Customer.ts";
+import {FinanceService} from "@/service/FinanceService.ts";
+import type {Customer} from "@/types/Customer.ts";
 
 const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
@@ -178,7 +178,7 @@ const downloadPdf = (idInvoice: number, invoiceNumber:string) => {
 
   onMounted(async () => {
     if (customerStore.customers.length === 0)await customerStore.refreshCustomers();
-    if (invoiceStore.invoices.length === 0) await invoiceStore.refreshInvoices();
+    if (invoiceStore.invoices.length <= 1) await invoiceStore.refreshInvoices();
   });
 
 const handleRowsPerPageChange = (event: DataTablePageEvent) => {
