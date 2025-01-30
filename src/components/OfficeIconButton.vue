@@ -28,24 +28,17 @@ const props = defineProps({
 </script>
 <template>
   <Button
-    class="icon-only border-0"
+    class="icon-only border-0 disabled:text-surface-600 disabled:dark:text-surface-100"
     :icon="props.icon"
     :rounded="props.rounded"
     outlined
     :class="{ isActive: active }"
     :severity="props.severity"
+    :disabled="props.btnDisabled"
   >
   </Button>
 </template>
-<!--    <i class="pi" :class="props.icon" :style="{ fontWeight: 'bold' }"></i>-->
-
-//.icon-only:hover { // color: white !important; // background-color: rgba(153, 82, 0) !important;
-//}
 <style scoped>
-//background-color: rgb(238, 127, 0);
-//display: block;
-//color: #332600 !important;
-//border-color: rgb(238, 127, 0) !important;
 .icon-only {
   outline: none; /* Brak zarysu po kliknięciu */
   padding: 10px 20px; /* Padding wewnątrz przycisku */
@@ -56,17 +49,12 @@ const props = defineProps({
     transform 0.3s ease; /* Animacja dla płynności */
 }
 
-.icon-only:disabled {
-  color: white !important;
-  background-color: gray !important;
-}
-
 .icon-only:focus {
   outline: none !important;
   box-shadow: none !important;
 }
 
-.icon-only:hover {
+.icon-only:hover:not(:disabled) {
   background-color: transparent !important;
   transform: scale(1.4);
   border: 0;

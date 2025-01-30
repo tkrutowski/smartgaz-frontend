@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/MainHomeView.vue'
-import LoginView from '../views/LoginView.vue'
-import Error503View from '../views/Error503View.vue'
-import RefreshComponent from '../components/RefreshComponent.vue'
-import { useAuthorizationStore } from '../stores/authorization'
+import HomeView from '@/views/MainHomeView.vue'
+import LoginView from '@/views/LoginView.vue'
+import Error503View from '@/views/Error503View.vue'
+import RefreshComponent from '@/components/RefreshComponent.vue'
+import { useAuthorizationStore } from '@/stores/authorization'
 
 
 //ADMIN
@@ -23,6 +23,7 @@ import RoomView from "../views/dobranocka/RoomView.vue";
 import ReservationSearchView from "../views/dobranocka/ReservationSearchView.vue";
 import ReservationsView from "../views/dobranocka/ReservationsView.vue";
 import CalendarView from "../views/dobranocka/CalendarView.vue";
+import ReseravationView from "@/views/dobranocka/ReseravationView.vue";
 
 const routes = [
   {
@@ -118,6 +119,12 @@ const routes = [
     path: '/dobranocka/reservation/all',
     name: 'Reservations',
     component: ReservationsView,
+  },
+  {
+    path: '/dobranocka/reservation/:reservationId',
+    name: 'Reservation',
+    component: ReseravationView,
+    props: true,
   },
   {
     path: '/dobranocka/calendar',

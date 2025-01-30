@@ -36,11 +36,12 @@ export const useRoomStore = defineStore('room', {
             return this.rooms
         },
         getRoomColorByBed(idBed:number):string {
-            // console.log('START - getRoomColorByBed()')
+            // console.log('START - getRoomColorByBed()', idBed)
             const room = this.rooms.find(room =>
                 room.beds.some(bed => bed.id === idBed)
             );
 
+            // console.log('START - getRoomColorByBed()', room?.color)
             return room ? `#${room.color}` : '';
         },
         getRoomByBed(idBed:number):Room | null {

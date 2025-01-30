@@ -76,7 +76,7 @@ export const useReservationStore = defineStore('reservation', {
             console.log('getReservationsFromDb() - Ilosc[]: ' + response.data.length)
             this.loadingReservation = false
             console.log('END - getReservationsFromDb()')
-            return response.data.map((reservation: Reservation) => this.convertResponse(reservation));
+            return response.data
         },
         //
         //GET RESERVATION FROM DB BY ID
@@ -88,10 +88,7 @@ export const useReservationStore = defineStore('reservation', {
             const response = await httpCommon.get(`/v1/dobranocka/reservation/` + reservationId)
             this.loadingReservation = false
             console.log('END - getReservationFromDb()', response)
-            if (response.data) {
-                return this.convertResponse(response.data)
-            } else
-                return null
+            return response.data || null
         },
 
         //ADD RESERVATION
@@ -120,7 +117,7 @@ export const useReservationStore = defineStore('reservation', {
             };
             console.log('START - addReservationDb()', payload)
             const response = await httpCommon.post(`/v1/dobranocka/reservation`, payload)
-            this.reservations.push(this.convertResponse(response.data))
+            this.reservations.push(response.data)
             console.log('END - addReservationDb()')
         },
 
@@ -138,27 +135,35 @@ export const useReservationStore = defineStore('reservation', {
 
 
         //
-        //UPDATE ROOM
+        //UPDATE RESERVATION
         //
-        // async updateRoomDb(room: Room) {
-        //     console.log('START - updateRoomDb()', room)
-        //     const payload = {
-        //         ...room,
-        //         beds: room.beds.map(bed => ({
-        //             ...bed,
-        //             type: Object.keys(BedType).find(
-        //                 key => BedType[key as keyof typeof BedType] === bed.type
-        //             ),
-        //             status: Object.keys(BedStatus).find(
-        //                 key => BedStatus[key as keyof typeof BedStatus] === bed.status
-        //             )
-        //         }))
-        //     };
-        //     const response = await httpCommon.put(`/v1/dobranocka/room`, payload)
-        //     const index = this.rooms.findIndex((r: Room) => r.id === room.id)
-        //     if (index !== -1) this.rooms.splice(index, 1, this.convertResponse(response.data))
-        //     console.log('END - updateRoomDb()')
-        // },
+        async updateReservationDb(reservation: Reservation) {
+            console.log('START - updateReservationDb()', )
+            const payload = {
+                ...reservation,
+                startDate: reservation.startDate ? moment(reservation.startDate).format("YYYY-MM-DD") : null,
+                endDate: reservation.endDate ? moment(reservation.endDate).format("YYYY-MM-DD") : null,
+                reservationStatus: Object.keys(ReservationStatus).find(
+                    key => ReservationStatus[key as keyof typeof ReservationStatus] === reservation.reservationStatus
+                ),
+                beds: reservation.beds.map((resBed: ReservationBed) => ({
+                    ...resBed,
+                    bed: {
+                        ...resBed.bed,
+                        type: Object.keys(BedType).find(
+                            key => BedType[key as keyof typeof BedType] ===  resBed.bed.type
+                        ),
+                        status: Object.keys(BedStatus).find(
+                            key => BedStatus[key as keyof typeof BedStatus] === resBed.bed.status
+                        )
+                    }
+                }))
+            };
+            const response = await httpCommon.put(`/v1/dobranocka/reservation`, payload)
+            const index = this.reservations.findIndex((r: Reservation) => r.id === reservation.id)
+            if (index !== -1) this.reservations.splice(index, 1, response.data)
+            console.log('END - updateReservationDb()')
+        },
 
         // convertResponse(bed: Bed) {
         //     return {
@@ -167,18 +172,18 @@ export const useReservationStore = defineStore('reservation', {
         //         status: BedStatus[bed.status as keyof typeof BedStatus] || bed.status
         //     }
         // },
-
-        convertResponse(res: Reservation) {
-            console.log("convertResponse", res)
-            return {
-                ...res,
-                beds: res.beds.map(bed => ({
-                    ...bed,
-                    // type: BedType[bed.type as keyof typeof BedType] || bed.type,
-                    // status: BedStatus[bed.status as keyof typeof BedStatus] || bed.status
-                }))
-            }
-        }
+        //
+        // convertResponse(res: Reservation) {
+        //     console.log("convertResponse", res)
+        //     return {
+        //         ...res,
+        //         beds: res.beds.map(bed => ({
+        //             ...bed,
+        //             // type: BedType[bed.type as keyof typeof BedType] || bed.type,
+        //             // status: BedStatus[bed.status as keyof typeof BedStatus] || bed.status
+        //         }))
+        //     }
+        // }
 
     },
 })

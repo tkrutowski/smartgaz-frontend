@@ -81,10 +81,20 @@ const submitDelete = async () => {
   }
 }
 
+//
+//-------------------------------------------------EDIT RESERVATION-------------------------------------------------
+//
+const editReservation = (item: Reservation) => {
+  router.push({
+    name: "Reservation",
+    params: {reservationId: item.id},
+  });
+};
+
 
 onMounted(async () => {
   if (customerStore.customers.length === 0) await customerStore.refreshCustomers();
-  if (reservationStore.reservations.length === 0) await reservationStore.refreshReservations();
+  if (reservationStore.reservations.length <= 1) await reservationStore.refreshReservations();
   if (roomStore.rooms.length === 0) await roomStore.refreshRooms();
 });
 
@@ -361,11 +371,11 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
             <!--                @click="confirmStatusChange(data)"-->
             <!--               disabled-->
             <!--            />-->
-            <!--            <OfficeIconButton-->
-            <!--                title="Edytuj fakturę"-->
-            <!--                icon="pi pi-file-edit"-->
-            <!--                @click="editItem(slotProps.data)"-->
-            <!--            />-->
+            <OfficeIconButton
+                title="Edytuj rezerwację"
+                icon="pi pi-file-edit"
+                @click="editReservation(slotProps.data)"
+            />
             <OfficeIconButton
                 title="Usuń rezerwację"
                 icon="pi pi-trash"
