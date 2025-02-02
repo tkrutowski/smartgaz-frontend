@@ -89,7 +89,7 @@ export const UtilsService = {
             return enumValue === value;
         }) as keyof T | undefined;
 
-        console.log("getEnumKeyByValue - result", result);
+        // console.log("getEnumKeyByValue - result", result);
         return result;
     },
 

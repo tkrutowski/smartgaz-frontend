@@ -109,8 +109,8 @@ async function newRoom() {
 function newBed() {
   console.log('new bed')
   bed.value.name = "nazwa";
-  bed.value.type = BedType.SINGLE;
-  bed.value.status = BedStatus.AVAILABLE;
+  bed.value.type = UtilsService.getEnumKeyByValue(BedType, BedType.SINGLE);
+  bed.value.status = UtilsService.getEnumKeyByValue(BedStatus, BedStatus.AVAILABLE);
   bed.value.priceDay = 35;
   bed.value.priceMonth = 700;
 
@@ -408,15 +408,13 @@ const showErrorName = () => {
           </DataTable>
         </Panel>
 
-
-        <!-- ROW-4  OTHER INFO  -->
-        <div class="row">
-          <div class="flex flex-col mt-4 sm:mt-0">
+        <!-- ROW-3  OTHER INFO  -->
+          <div class="flex flex-col mt-4">
             <label class="pl-2" for="input">Dodatkowe informacje:</label>
             <Textarea v-model="room.info" rows="4" cols="30"/>
           </div>
-        </div>
-        <!-- ROW-7  BTN SAVE -->
+
+        <!-- ROW-4  BTN SAVE -->
         <div class="flex mt-5 justify-center">
           <OfficeButton
               text="zapisz"

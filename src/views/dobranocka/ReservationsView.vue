@@ -387,8 +387,7 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
         </template>
       </Column>
       <template #expansion="slotProps">
-        <div class="flex flex-col pt-4 gap-4 items-center justify-center">
-          {{ slotProps.data }}
+        <div class="flex flex-col pt-4 gap-4  justify-center">
           <div class="flex flex-col border-2 rounded-2xl py-2 w-fit px-5"
                :style="{borderColor: `${roomStore.getRoomColorByBed(bed.bed.id)}`}"
                v-for="(bed) in slotProps.data.beds" key="bed.id">

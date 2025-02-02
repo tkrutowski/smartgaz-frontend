@@ -28,7 +28,7 @@ export const useRoomStore = defineStore('room', {
         //
         async getRooms() {
             console.log('START - getRooms()')
-            if (this.rooms.length === 0 && !this.loadingRooms) {
+            if (this.rooms.length <= 1 && !this.loadingRooms) {
                 await this.refreshRooms()
             }
             console.log('END - getRooms()')
@@ -97,19 +97,7 @@ export const useRoomStore = defineStore('room', {
         //
         async addRoomDb(room: Room) {
             console.log('START - addRoomDb()', room)
-            const payload = {
-                ...room,
-                beds: room.beds.map(bed => ({
-                    ...bed,
-                    type: Object.keys(BedType).find(
-                        key => BedType[key as keyof typeof BedType] === bed.type
-                    ),
-                    status: Object.keys(BedStatus).find(
-                        key => BedStatus[key as keyof typeof BedStatus] === bed.status
-                    )
-                }))
-            };
-            const response = await httpCommon.post(`/v1/dobranocka/room`, payload)
+            const response = await httpCommon.post(`/v1/dobranocka/room`, room)
             this.rooms.push(response.data)
             console.log('END - addRoomDb()')
         },
@@ -119,19 +107,7 @@ export const useRoomStore = defineStore('room', {
         //
         async updateRoomDb(room: Room) {
             console.log('START - updateRoomDb()', room)
-            const payload = {
-                ...room,
-                beds: room.beds.map(bed => ({
-                    ...bed,
-                    type: Object.keys(BedType).find(
-                        key => BedType[key as keyof typeof BedType] === bed.type
-                    ),
-                    status: Object.keys(BedStatus).find(
-                        key => BedStatus[key as keyof typeof BedStatus] === bed.status
-                    )
-                }))
-            };
-            const response = await httpCommon.put(`/v1/dobranocka/room`, payload)
+            const response = await httpCommon.put(`/v1/dobranocka/room`, room)
             const index = this.rooms.findIndex((r: Room) => r.id === room.id)
             if (index !== -1) this.rooms.splice(index, 1, response.data)
             console.log('END - updateRoomDb()')
