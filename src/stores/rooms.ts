@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import {BedStatus, BedType, type Room} from "../types/Room.ts";
+import {type Room} from "../types/Room.ts";
 
 export const useRoomStore = defineStore('room', {
     state: () => ({

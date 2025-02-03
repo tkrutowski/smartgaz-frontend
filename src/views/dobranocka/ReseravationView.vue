@@ -76,6 +76,10 @@ const findNewBeds = () => {
             life: 5000,
           });
         } else {
+          const beds:number[] = reservation.value.beds.flatMap((bed:ReservationBed) => bed.bed.id)
+          for (const room of rooms) {
+            room.beds = room.beds.filter((bed: Bed) => !beds.includes(bed.id))
+          }
           rooms.forEach((room: Room) => availableBeds.value.set(room.name, room.beds));
           showAddNewBedsDialog.value = true;
         }
@@ -134,6 +138,7 @@ async function updateReservation() {
             detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
+          btnSaveDisabled.value = false
         }).finally(() => {
           btnShowBusy.value = false;
         })

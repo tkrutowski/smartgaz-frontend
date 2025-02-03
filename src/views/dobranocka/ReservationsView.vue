@@ -393,7 +393,7 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
                v-for="(bed) in slotProps.data.beds" key="bed.id">
 
             <div class="flex flex-row  items-center justify-center gap-2">
-              <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.bed.type) === BedType.SINGLE"
+              <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.bed.type.toString() as keyof typeof BedType) === BedType.SINGLE"
                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                    id="single-bed"
                    class="w-12 h-12 fill-current text-black dark:text-white">

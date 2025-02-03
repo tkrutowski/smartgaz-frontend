@@ -27,6 +27,7 @@ const room = ref<Room>({
   info: "",
 });
 
+const bedToRemove = ref<Bed | null>(null);
 const bed = ref<Bed>({
   id: 0,
   name: "",
@@ -109,8 +110,8 @@ async function newRoom() {
 function newBed() {
   console.log('new bed')
   bed.value.name = "nazwa";
-  bed.value.type = UtilsService.getEnumKeyByValue(BedType, BedType.SINGLE);
-  bed.value.status = UtilsService.getEnumKeyByValue(BedStatus, BedStatus.AVAILABLE);
+  bed.value.type = BedType.SINGLE;
+  bed.value.status = BedStatus.AVAILABLE;
   bed.value.priceDay = 35;
   bed.value.priceMonth = 700;
 
@@ -181,14 +182,14 @@ const showDeleteConfirmationDialog = ref<boolean>(false);
 const bedDeleteItemIndex = ref<number>(-1);
 const confirmDeleteItem = (item: Bed, index: number) => {
   console.log("confirmDelete",item, index)
-  bed.value = item;
+  bedToRemove.value = item;
   bedDeleteItemIndex.value = index;
   showDeleteConfirmationDialog.value = true;
 };
 
 const deleteConfirmationMessage = computed(() => {
-  if (bed.value)
-    return `Czy chcesz usunąc łóżko <b>${bed.value.name}</b>?`;
+  if (bedToRemove.value)
+    return `Czy chcesz usunąc łóżko <b>${bedToRemove.value.name}</b>?`;
   return "No message";
 });
 

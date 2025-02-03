@@ -138,27 +138,28 @@ export const useReservationStore = defineStore('reservation', {
         //UPDATE RESERVATION
         //
         async updateReservationDb(reservation: Reservation) {
-            console.log('START - updateReservationDb()', )
+            console.log('START - updateReservationDb()')
             const payload = {
                 ...reservation,
                 startDate: reservation.startDate ? moment(reservation.startDate).format("YYYY-MM-DD") : null,
                 endDate: reservation.endDate ? moment(reservation.endDate).format("YYYY-MM-DD") : null,
-                reservationStatus: Object.keys(ReservationStatus).find(
-                    key => ReservationStatus[key as keyof typeof ReservationStatus] === reservation.reservationStatus
-                ),
-                beds: reservation.beds.map((resBed: ReservationBed) => ({
-                    ...resBed,
-                    bed: {
-                        ...resBed.bed,
-                        type: Object.keys(BedType).find(
-                            key => BedType[key as keyof typeof BedType] ===  resBed.bed.type
-                        ),
-                        status: Object.keys(BedStatus).find(
-                            key => BedStatus[key as keyof typeof BedStatus] === resBed.bed.status
-                        )
-                    }
-                }))
+                // reservationStatus: Object.keys(ReservationStatus).find(
+                //     key => ReservationStatus[key as keyof typeof ReservationStatus] === reservation.reservationStatus
+                // ),
+                // beds: reservation.beds.map((resBed: ReservationBed) => ({
+                //     ...resBed,
+                //     bed: {
+                //         ...resBed.bed,
+                //         type: Object.keys(BedType).find(
+                //             key => BedType[key as keyof typeof BedType] ===  resBed.bed.type
+                //         ),
+                //         status: Object.keys(BedStatus).find(
+                //             key => BedStatus[key as keyof typeof BedStatus] === resBed.bed.status
+                //         )
+                //     }
+                // }))
             };
+            // console.log('START - updateReservationDb()', payload)
             const response = await httpCommon.put(`/v1/dobranocka/reservation`, payload)
             const index = this.reservations.findIndex((r: Reservation) => r.id === reservation.id)
             if (index !== -1) this.reservations.splice(index, 1, response.data)
