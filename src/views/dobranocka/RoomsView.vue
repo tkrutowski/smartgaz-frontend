@@ -56,7 +56,7 @@ const submitDelete = async () => {
       @cancel="showDeleteConfirmationDialog = false"
   />
   <div class="flex flex-col md:flex-row flex-wrap justify-center p-2 gap-4">
-    <div v-for="room in roomStore.rooms" :key="room.id">
+    <div v-for="room in roomStore.rooms.sort((a, b) => a.name.localeCompare(b.name))" :key="room.id">
       <RoomDisplay class="md:max-w-[335px]" :room="room" @delete="confirmDelete"/>
     </div>
   </div>
