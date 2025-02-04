@@ -136,7 +136,7 @@ function findAvailable() {
             life: 5000,
           });
         } else {
-          rooms.forEach((room: Room) => availableBeds.value.set(room.name, room.beds));
+          rooms.sort((a, b) => a.name.localeCompare(b.name)).forEach((room: Room) => availableBeds.value.set(room.name, room.beds));
         }
       }).catch((reason: AxiosError) => {
     toast.add({

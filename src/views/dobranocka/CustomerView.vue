@@ -210,21 +210,20 @@ const showErrorRegon = () => {
   }
 };
 const showErrorStreet = () => {
-  return submitted.value && customer.value.street.length <= 0;
+  return submitted.value && customer.value.street.length >= 30;
 };
 
 const showErrorZip = () => {
-  if (submitted.value) {
+  if (submitted.value && customer.value.zip.length > 0) {
     return (
-        !(/(^\d{2}-\d{3}$)/.test(customer.value.zip) && customer.value.zip.length <= 6) &&
-        !(/(^\d{5})/.test(customer.value.zip) && customer.value.zip.length <= 5)
+        !/(^\d{2}-\d{3}$)/.test(customer.value.zip)
     );
   }else {
     return false;
   }
 };
 const showErrorCity = () => {
-  return submitted.value && customer.value.city.length <= 0;
+  return submitted.value && customer.value.city.length >= 30;
 };
 const showErrorMail = () => {
   if (submitted.value && customer.value.mail.length > 0) {
@@ -330,7 +329,7 @@ const showErrorPhone = () => {
             <InputText
                 id="city"
                 v-model="customer.city"
-                maxlength="100"
+                maxlength="30"
                 :invalid="showErrorCity()"
             />
             <small class="text-red-500">{{
