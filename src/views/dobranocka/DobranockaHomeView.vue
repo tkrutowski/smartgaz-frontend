@@ -78,7 +78,7 @@ onMounted(async () => {
   await roomStore.getRooms();
   await customerStore.getCustomers();
   await reservationStore.refreshReservations()
-  roomStore.rooms.forEach((room: Room) => allBeds.value.set(room.name, room.beds));
+  roomStore.rooms.sort((a, b) => a.name.localeCompare(b.name)).forEach((room: Room) => allBeds.value.set(room.name, room.beds));
 });
 
 </script>
