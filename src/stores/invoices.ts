@@ -102,7 +102,7 @@ export const useInvoiceStore = defineStore("invoice", {
                 invoiceDate: invoice.invoiceDate ? moment(invoice.invoiceDate).format("YYYY-MM-DD") : null,
                 sellDate: invoice.sellDate ? moment(invoice.sellDate).format("YYYY-MM-DD") : null,
                 paymentDate: invoice.paymentDate ? moment(invoice.paymentDate).format("YYYY-MM-DD") : null,
-                paymentMethod: UtilsService.getEnumKeyByValue(PaymentMethod, invoice.paymentMethod),
+                paymentMethod: UtilsService.getEnumKeyByValue(PaymentMethod, invoice.paymentMethod!),
                 paymentStatus: UtilsService.getEnumKeyByValue(PaymentStatus, invoice.paymentStatus),
             };
             console.log("addInvoiceDb() trans", transformedInvoice);
