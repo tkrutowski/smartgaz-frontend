@@ -7,7 +7,7 @@ export interface Invoice {
   sellDate: Date | null;
   invoiceDate:  Date | null;
   paymentDate:  Date | null;
-  paymentMethod: PaymentMethod;
+  paymentMethod: PaymentMethod | undefined;
   paymentStatus: PaymentStatus;
   otherInfo: string;
   invoiceItems: InvoiceItem[];

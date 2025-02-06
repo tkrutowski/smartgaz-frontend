@@ -25,7 +25,7 @@
 }
 
 .p-datatable-scrollable .p-datatable-frozen-column {
-  @apply sticky bg-surface-0 dark:bg-surface-900;
+  @apply sticky bg-surface-0 dark:bg-surface-900 z-10;
 }
 
 .p-datatable-scrollable th.p-datatable-frozen-column {

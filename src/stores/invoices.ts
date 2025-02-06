@@ -3,6 +3,7 @@ import httpCommon from "../config/http-common";
 import type {Invoice, Vat} from "../types/Invoice.ts";
 import {PaymentMethod, PaymentStatus} from "../types/Invoice.ts";
 import moment from "moment";
+import {UtilsService} from "@/service/UtilsService.ts";
 
 export const useInvoiceStore = defineStore("invoice", {
     state: () => ({
@@ -101,6 +102,8 @@ export const useInvoiceStore = defineStore("invoice", {
                 invoiceDate: invoice.invoiceDate ? moment(invoice.invoiceDate).format("YYYY-MM-DD") : null,
                 sellDate: invoice.sellDate ? moment(invoice.sellDate).format("YYYY-MM-DD") : null,
                 paymentDate: invoice.paymentDate ? moment(invoice.paymentDate).format("YYYY-MM-DD") : null,
+                paymentMethod: UtilsService.getEnumKeyByValue(PaymentMethod, invoice.paymentMethod),
+                paymentStatus: UtilsService.getEnumKeyByValue(PaymentStatus, invoice.paymentStatus),
             };
             console.log("addInvoiceDb() trans", transformedInvoice);
 

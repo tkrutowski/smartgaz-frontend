@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref} from "vue";
 import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 import moment from "moment";
 import "moment/dist/locale/pl"; // Import lokalizacji polskiej
@@ -13,6 +13,27 @@ const roomStore = useRoomStore();
 moment.locale("pl"); // Ustawienie lokalizacji na język polski
 
 const selectedDateRange = ref([moment().startOf('day').toDate(), moment().add(90, "days").toDate()]);
+
+const scrollHeight = ref("400px");
+function calculateTableHeight() {
+  const windowHeight = window.innerHeight;
+  const menuHeight = 200;
+
+  // Pobranie rzeczywistej wysokości nagłówka tabeli
+  const tableHeader = document.querySelector(".p-datatable-thead");
+  const tableHeaderHeight = tableHeader ? tableHeader.clientHeight : 50; // Domyślnie 50px
+
+  const availableHeight = windowHeight - menuHeight - tableHeaderHeight;
+  scrollHeight.value = `${availableHeight}px`;
+}
+
+//
+function isToday(day: string | Date): boolean {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const dateToCheck = new Date(day).toISOString().split("T")[0]; // Konwersja daty
+  return today === dateToCheck;
+}
+
 
 const dateRange = computed(() => {
   const [startDate, endDate] = selectedDateRange.value;
@@ -98,8 +119,12 @@ function isFirstReservedDay(bedToCheck: Bed, day: Date): boolean {
 onMounted(async () => {
   await roomStore.getRooms();
   await reservationStore.refreshReservations()
+  calculateTableHeight();
+  window.addEventListener("resize", calculateTableHeight);
 });
-
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", calculateTableHeight);
+});
 </script>
 
 <template>
@@ -124,8 +149,8 @@ onMounted(async () => {
         </FloatLabel>
       </div>
     </template>
-    <DataTable :value="roomStore.getAllBeds">
-      <Column field="name" header="Łóżko" body-class="py-2">
+    <DataTable :value="roomStore.getAllBeds" scrollable :scrollHeight="scrollHeight">
+      <Column field="name" header="Łóżko" body-class="py-2" frozen >
         <template #body="{data, field}">
           <p class="">{{ data[field] }}</p>
         </template>
@@ -133,7 +158,7 @@ onMounted(async () => {
       <template v-for="(day) in dateRange" :key="day">
         <Column :header-class="getHederClass(day)" body-class="">
           <template #header>
-            <div class="flex flex-col items-center justify-center w-full">
+            <div class="flex flex-col items-center justify-center w-full" :class="{'bg-green-600 rounded-lg text-white font-bold px-2': isToday(day)}">
               <p>{{ moment(day).format("ddd") }}</p>
               <p>{{ moment(day).format("D") }}</p>
             </div>

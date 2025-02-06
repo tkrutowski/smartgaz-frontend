@@ -34,6 +34,8 @@ const invoice = ref<Invoice>({
   invoiceItems: [],
 });
 
+const selectedPaymentMethod = ref<string | undefined>(UtilsService.getEnumKeyByValue(PaymentMethod, PaymentMethod.TRANSFER));
+
 const invoiceItem = ref<InvoiceItem>({
   id: 0,
   idInvoice: 0,
@@ -137,6 +139,7 @@ async function newInvoice() {
     invoice.value.invoiceNumber = invoiceYear.value + "/" + invoiceNumber.value;
     const invoiceDate = moment(invoice.value.invoiceDate);
     invoice.value.paymentDate = invoiceDate.add(paymentDeadline.value, 'day').toDate()
+    invoice.value.paymentMethod = UtilsService.getEnumValueByKey(PaymentMethod, selectedPaymentMethod.value!.toString() as keyof typeof PaymentMethod);
     await invoiceStore.addInvoiceDb(invoice.value)
         .then(() => {
           toast.add({
@@ -577,7 +580,7 @@ const paymentMethods = Object.keys(PaymentMethod).map((key) => ({
                   <label for="payment-method">Forma płatności:</label>
                   <Select
                       id="payment-method"
-                      v-model="invoice.paymentMethod"
+                      v-model="selectedPaymentMethod"
                       :options="paymentMethods"
                       option-label="label"
                       option-value="value"
