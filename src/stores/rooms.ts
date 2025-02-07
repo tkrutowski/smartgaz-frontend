@@ -11,7 +11,7 @@ export const useRoomStore = defineStore('room', {
     //getters = computed
     getters: {
         getAllBeds: (state) =>
-            state.rooms.flatMap((room: Room) => room.beds)
+            state.rooms.sort((a, b) => a.name.localeCompare(b.name)).flatMap((room: Room) => room.beds)
     },
 
     //actions = metody w komponentach

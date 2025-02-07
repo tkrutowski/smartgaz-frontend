@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onBeforeUnmount, onMounted, ref} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, ref} from "vue";
 import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 import moment from "moment";
 import "moment/dist/locale/pl"; // Import lokalizacji polskiej
@@ -12,9 +12,10 @@ const reservationStore = useReservationStore();
 const roomStore = useRoomStore();
 moment.locale("pl"); // Ustawienie lokalizacji na język polski
 
-const selectedDateRange = ref([moment().startOf('day').toDate(), moment().add(90, "days").toDate()]);
+const selectedDateRange = ref([moment().startOf('day').subtract(30, "days").toDate(), moment().add(90, "days").toDate()]);
 
-const scrollHeight = ref("400px");
+const scrollHeight = ref("800px");
+
 function calculateTableHeight() {
   const windowHeight = window.innerHeight;
   const menuHeight = 200;
@@ -29,9 +30,7 @@ function calculateTableHeight() {
 
 //
 function isToday(day: string | Date): boolean {
-  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-  const dateToCheck = new Date(day).toISOString().split("T")[0]; // Konwersja daty
-  return today === dateToCheck;
+  return moment(day).isSame(moment(), "day");
 }
 
 
@@ -113,6 +112,49 @@ function isFirstReservedDay(bedToCheck: Bed, day: Date): boolean {
   );
 }
 
+function isSecondReservedDay(bedToCheck: Bed, day: Date): boolean {
+  return reservationStore.reservations.some((reservation: Reservation) =>
+      reservation.beds
+          .flatMap((resBed: ReservationBed) => resBed.bed)
+          .some((b: Bed) => b.id === bedToCheck.id) &&
+      moment(reservation.startDate).add(1, 'days').isSame(moment(day), 'day')
+  );
+}
+
+function getReservation(bed: Bed, date: Date): Reservation | undefined {
+  return reservationStore.reservations.find((reservation: Reservation) =>
+      reservation.beds.some((resBed: ReservationBed) => resBed.bed.id === bed.id) &&
+      moment(date).isBetween(moment(reservation.startDate), moment(reservation.endDate), 'day', '[]')
+  );
+}
+
+function getReservationLength(bed: Bed, date: Date): number {
+  const reservation = reservationStore.reservations.find((reservation: Reservation) =>
+      reservation.beds
+          .flatMap((resBed: ReservationBed) => resBed.bed)
+          .some((b: Bed) => b.id === bed.id)&&
+      moment(date).isBetween(moment(reservation.startDate), moment(reservation.endDate), 'day', '[]')
+  );
+  if (!reservation) return 1;
+
+  const start = moment(reservation.startDate);
+  const end = moment(reservation.endDate);
+  return end.diff(start, 'days') - 1;
+}
+
+//display current day in the table
+const dataTableRef = ref(null);
+const todayIndex = ref<number>(0);
+
+const scrollToToday = () => {
+  if (dataTableRef.value) {
+    const columns = (dataTableRef.value as any).$el.querySelectorAll(".p-datatable-tbody > tr:first-child > td ");
+    if (columns[todayIndex.value]) {
+      columns[todayIndex.value].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+    }
+  }
+};
+
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
 //
@@ -121,6 +163,13 @@ onMounted(async () => {
   await reservationStore.refreshReservations()
   calculateTableHeight();
   window.addEventListener("resize", calculateTableHeight);
+
+  todayIndex.value = dateRange.value.findIndex(day => moment(day).isSame(moment(), "day"));
+console.log("todayIndex",todayIndex.value)
+  nextTick(() => {
+    scrollToToday();
+  });
+
 });
 onBeforeUnmount(() => {
   window.removeEventListener("resize", calculateTableHeight);
@@ -149,7 +198,8 @@ onBeforeUnmount(() => {
         </FloatLabel>
       </div>
     </template>
-    <DataTable :value="roomStore.getAllBeds" scrollable :scrollHeight="scrollHeight">
+    <DataTable v-if="!reservationStore.loadingReservation && !roomStore.loadingRooms" ref="dataTableRef" :value="roomStore.getAllBeds" scrollable :scrollHeight="scrollHeight">
+      <template #empty> <p class="text-lg text-red-500">Nie znaleziono rezerwacji.</p> </template>
       <Column field="name" header="Łóżko" body-class="py-2" frozen >
         <template #body="{data, field}">
           <p class="">{{ data[field] }}</p>
@@ -158,18 +208,21 @@ onBeforeUnmount(() => {
       <template v-for="(day) in dateRange" :key="day">
         <Column :header-class="getHederClass(day)" body-class="">
           <template #header>
-            <div class="flex flex-col items-center justify-center w-full" :class="{'bg-green-600 rounded-lg text-white font-bold px-2': isToday(day)}">
+            <div class="flex flex-col items-center justify-center w-full"
+                 :class="{'bg-green-600 rounded-lg text-white font-bold px-2': isToday(day)}">
               <p>{{ moment(day).format("ddd") }}</p>
               <p>{{ moment(day).format("D") }}</p>
             </div>
           </template>
-          <template #body="{data}" class="calendar">
-            <div class="w-full h-full py-3"
+          <template #body="{data}" >
+            <div class="w-full h-full py-3 "
                  :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), getBodyOpacity(day))}`">
 
-              <p :class="{'bg-red-600': isBedReserved(data, day),
-                'cut-end': isLastReservedDay(data, day), 'cut-start': isFirstReservedDay(data, day)}">
-                &nbsp;</p>
+              <p class="relative" :class="{'bg-red-600': isBedReserved(data, day),
+                            'cut-end': isLastReservedDay(data, day), 'cut-start': isFirstReservedDay(data, day)}">&emsp;
+             <span v-if="isSecondReservedDay(data, day)" class="absolute left-0 top-0 z-[9] text-white whitespace-nowrap text-center"
+                   :style="{ width: getReservationLength(data, day) * 50 + 'px' }"
+             >{{ getReservation(data, day)?.customer?.name}}</span></p>
             </div>
           </template>
         </Column>
@@ -182,11 +235,9 @@ onBeforeUnmount(() => {
 ::v-deep(.p-datatable-tbody > tr > td) {
   padding: 0 !important;
 }
-
 .cut-end {
   clip-path: polygon(0 0, 100% 0, 50% 100%, 0 100%);
 }
-
 .cut-start {
   clip-path: polygon(50% 0, 100% 0, 100% 100%, 0 100%);
 }
