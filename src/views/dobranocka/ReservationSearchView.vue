@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {useRoomStore} from "@/stores/rooms.ts";
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import OfficeButton from "@/components/OfficeButton.vue";
 import {useToast} from "primevue/usetoast";
 import type {AxiosError} from "axios";
@@ -201,7 +201,27 @@ function saveReservation() {
     reservationInProgress.value = false
   })
 }
-
+//change price to all beds if first change
+watch(
+    () => selectedBeds.value[0]?.priceDay,
+    (newPrice) => {
+      if (newPrice !== undefined) {
+        selectedBeds.value.forEach((bed) => {
+          bed.priceDay = newPrice;
+        });
+      }
+    }
+);
+watch(
+    () => selectedBeds.value[0]?.priceMonth,
+    (newPrice) => {
+      if (newPrice !== undefined) {
+        selectedBeds.value.forEach((bed) => {
+          bed.priceMonth = newPrice;
+        });
+      }
+    }
+);
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
 //
