@@ -24,6 +24,7 @@ import OfficeIconButton from "@/components/OfficeIconButton.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import router from "@/router";
 import {RentService} from "@/service/RentService.ts";
+import EditReservationDatesDialog from "@/components/dobranocka/EditReservationDatesDialog.vue";
 
 const route = useRoute();
 const reservationStore = useReservationStore();
@@ -76,7 +77,7 @@ const findNewBeds = () => {
             life: 5000,
           });
         } else {
-          const beds:number[] = reservation.value.beds.flatMap((bed:ReservationBed) => bed.bed.id)
+          const beds: number[] = reservation.value.beds.flatMap((bed: ReservationBed) => bed.bed.id)
           for (const room of rooms) {
             room.beds = room.beds.filter((bed: Bed) => !beds.includes(bed.id))
           }
@@ -189,9 +190,27 @@ const submitDelete = async () => {
   showDeleteConfirmationDialog.value = false;
 };
 
+//
+//------------------------------------------EDIT RESERVATION DATES----------------------------------------------
+//
+const showEditReservationDatesDialog = ref<boolean>(false);
+const submitDateChange = async (checkin: Date, checkout: Date) => {
+  console.log("submitDateChange()", checkin, checkout);
+  reservation.value.startDate = checkin;
+  reservation.value.endDate = checkout;
+  toast.add({
+    severity: "info",
+    summary: "Potwierdzenie",
+    detail: "Zmieniono datę rezerwacji.",
+    life: 4000,
+  });
+
+  showEditReservationDatesDialog.value = false;
+};
+
 //--------------------------------------------------MOUNTED------------------------
 onMounted(async () => {
-  if (customerStore.customers.length === 0) {
+  if (customerStore.customers.length <= 1) {
     await customerStore.refreshCustomers()
   }
   if (roomStore.rooms.length === 0) {
@@ -225,20 +244,39 @@ onMounted(async () => {
       @save="submitDelete"
       @cancel="showDeleteConfirmationDialog = false"
   />
+  <EditReservationDatesDialog
+      v-model:visible="showEditReservationDatesDialog"
+      :checkin="reservation.startDate"
+      :checkout="reservation.endDate"
+      :beds="reservation.beds"
+      :reservation-id="reservation.id"
+      @save="submitDateChange"
+      @cancel="showEditReservationDatesDialog = false"
+  />
   <Panel class="mt-2">
     <template #header>
-      <OfficeIconButton
-          title="Powrót do listy rezerwacji"
-          icon="pi pi-fw pi-list"
-          @click="() => router.push({ name: 'Reservations' })"
-      />
-      <OfficeButton btn-type="office-regular" label="ŁÓŻKO" icon="pi pi-plus" icon-pos="left" @click="findNewBeds"
-                    :loading="reservationStore.loadingReservation"/>
-      <div class="flex flex-col md:flex-row w-full gap-2 justify-center items-center">
+      <div class="flex flex-col md:flex-row w-full">
+        <div class="flex gap-3 order-2 md:order-1">
 
-        <p class="text-xl md:text-2xl  ">Edycja rezerwacji na okres </p>
-        <p class="text-xl md:text-2xl text-primary "> {{ moment(reservation.startDate).format("DD-MM-YYYY") }} -
-          {{ moment(reservation.endDate).format("DD-MM-YYYY") }}</p>
+          <OfficeIconButton
+              title="Powrót do listy rezerwacji"
+              icon="pi pi-fw pi-table"
+              @click="() => router.push({ name: 'Reservations' })"
+          />
+          <OfficeButton btn-type="office-regular" label="ŁÓŻKO" icon="pi pi-plus" icon-pos="left" @click="findNewBeds"
+                        :loading="reservationStore.loadingReservation"/>
+        </div>
+        <div class="flex w-full gap-2 justify-center items-center order-1 md:order-2">
+
+          <p class="text-lg md:text-2xl  ">Rezerwacja:
+            <span class="text-lg md:text-2xl text-primary "> {{ moment(reservation.startDate).format("DD-MM-YYYY") }} -
+          {{ moment(reservation.endDate).format("DD-MM-YYYY") }}</span></p>
+          <OfficeIconButton
+              title="Zamień łóżko na inne"
+              icon="pi pi-file-edit"
+              @click="showEditReservationDatesDialog=true"
+          />
+        </div>
       </div>
     </template>
     <div class="flex flex-col w-full gap-3 justify-center items-center">
@@ -285,21 +323,16 @@ onMounted(async () => {
             <FloatLabel variant="in">
               <InputNumber v-model="bed.priceDay" inputId="day" mode="currency" currency="PLN" locale="pl-PL"
                            @focus="UtilsService.selectText" :min="0" fluid/>
-              <label for="day" class="font-bold block mb-1 ml-1"> Cena netto/dzień </label>
+              <label for="day" class="font-bold block mb-1 ml-1"> Cena/dzień </label>
             </FloatLabel>
 
             <FloatLabel variant="in">
               <InputNumber v-model="bed.priceMonth" inputId="month" mode="currency" currency="PLN" locale="pl-PL"
                            fluid @focus="UtilsService.selectText" :min="0"/>
-              <label for="month" class="font-bold block mb-1 ml-1"> Cena netto/miesiąc </label>
+              <label for="month" class="font-bold block mb-1 ml-1"> Cena/miesiąc </label>
             </FloatLabel>
           </div>
           <div class="flex flex-row justify-center items-center">
-            <OfficeIconButton
-                title="Zamień łóżko na inne"
-                icon="pi pi-file-edit"
-                :btn-disabled="true"
-            />
             <OfficeIconButton
                 title="Usuń łóżko z rezerwacji"
                 icon="pi pi-trash"

@@ -129,7 +129,7 @@ const calculateNetSum = (() => {
 //SEARCH
 //
 function findAvailable() {
-  reservationStore.getAvailableBedsFromDb(checkin.value!, checkout.value!, 0)
+  reservationStore.getAvailableBedsFromDb(checkin.value!, checkout.value!)
       .then((rooms: Room[]) => {
         if (rooms.length === 0) {
           toast.add({

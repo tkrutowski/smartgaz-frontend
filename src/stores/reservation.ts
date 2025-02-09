@@ -52,17 +52,26 @@ export const useReservationStore = defineStore('reservation', {
         //
         //GET AVAILABLE BEDS FROM DB
         //
-        //TODO remove homManyBeds
-        async getAvailableBedsFromDb(start: Date, end: Date, howManyBeds: number): Promise<Room[]> {
+        async getAvailableBedsFromDb(start: Date, end: Date): Promise<Room[]> {
             console.log('START - getAvailableBedsFromDb()', start.toLocaleDateString())
             this.loadingReservation = true
 
-            const response = await httpCommon.get(`/v1/dobranocka/reservation/search?start=${start.toLocaleDateString()}&end=${end.toLocaleDateString()}&howManyBeds=${howManyBeds}`)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/search?start=${start.toLocaleDateString()}&end=${end.toLocaleDateString()}`)
             console.log('getRoomsFromDb() - Ilosc[]: ' + response.data.length)
             this.loadingReservation = false
             console.log('END - getAvailableBedsFromDb()')
-            // return  response.data.map((bed: any) => this.convertResponse(bed));
-            return response.data;//.map((room: any) => this.convertResponse(room));
+            return response.data;
+        },
+
+        //
+        //CHECK CHANGE DATE BEDS FROM DB
+        //
+        async checkBedAvailabilityFromDb(start: Date, end: Date, bedToCheckId: number, currentReservationId: number): Promise<boolean> {
+            console.log('START - checkBedAvailabilityFromDb()', bedToCheckId)
+
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/checkbed?start=${start.toLocaleDateString()}&end=${end.toLocaleDateString()}&bedId=${bedToCheckId}&reservationId=${currentReservationId}`)
+            console.log('END - checkBedAvailabilityFromDb()')
+            return response.data;
         },
 
         //

@@ -36,7 +36,6 @@ function isToday(day: string | Date): boolean {
 
 const dateRange = computed(() => {
   const [startDate, endDate] = selectedDateRange.value;
-  console.log("COMPUTED", startDate, endDate);
   const dates = [];
   let currentDate = moment(startDate).toDate();
   while (currentDate <= moment(endDate).toDate()) {
@@ -46,7 +45,7 @@ const dateRange = computed(() => {
   return dates;
 });
 
-const getHederClass = (day: Date) => {
+const getHeaderClass = (day: Date) => {
   return isWeekendOrHoliday(day) ? "bg-surface-300 dark:bg-surface-700" : null;
 };
 
@@ -206,12 +205,12 @@ onBeforeUnmount(() => {
         </template>
       </Column>
       <template v-for="(day) in dateRange" :key="day">
-        <Column :header-class="getHederClass(day)" body-class="">
+        <Column :header-class="getHeaderClass(day)" body-class="">
           <template #header>
             <div class="flex flex-col items-center justify-center w-full"
                  :class="{'bg-green-600 rounded-lg text-white font-bold px-2': isToday(day)}">
               <p>{{ moment(day).format("ddd") }}</p>
-              <p>{{ moment(day).format("D") }}</p>
+              <p>{{ moment(day).format("D") }}.{{moment(day).format("MM")}}</p>
             </div>
           </template>
           <template #body="{data}" >
