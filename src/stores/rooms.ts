@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import httpCommon from '../config/http-common'
-import {type Room} from "../types/Room.ts";
+import {type Bed, BedStatus, type Room} from "../types/Room.ts";
 
 export const useRoomStore = defineStore('room', {
     state: () => ({
@@ -45,11 +45,11 @@ export const useRoomStore = defineStore('room', {
             return room ? `#${room.color}` : '';
         },
         getRoomByBed(idBed:number):Room | null {
-            console.log('START - getRoomByBed()')
+            // console.log('START - getRoomByBed()')
             const room = this.rooms.find(room =>
                 room.beds.some(bed => bed.id === idBed)
             );
-            console.log('END - getRoomColorByBed()')
+            // console.log('END - getRoomByBed()')
 
             return room ? room : null;
         },
@@ -111,6 +111,31 @@ export const useRoomStore = defineStore('room', {
             const index = this.rooms.findIndex((r: Room) => r.id === room.id)
             if (index !== -1) this.rooms.splice(index, 1, response.data)
             console.log('END - updateRoomDb()')
+        },
+
+        //
+        //UPDATE BED (status)
+        //
+        async updateBedDb(bed: Bed) {
+            console.log('START - updateBedDb()', bed)
+            const payload = {
+                        ...bed,
+                        // type: Object.keys(BedType).find(
+                        //     key => BedType[key as keyof typeof BedType] ===  resBed.bed.type
+                        // ),
+                        status: Object.keys(BedStatus).find(
+                            key => BedStatus[key as keyof typeof BedStatus] === bed.status)
+            };
+            console.log('START - updateBedDb() payload', payload)
+            const response = await httpCommon.put(`/v1/dobranocka/room/bed`, payload)
+            const room = this.rooms.find((r: Room) => r.beds.some((b: Bed) => b.id === bed.id));
+            if (room) {
+                const bedIndex = room.beds.findIndex((b: Bed) => b.id === bed.id);
+                if (bedIndex !== -1) {
+                    room.beds.splice(bedIndex, 1, response.data);
+                }
+            }
+            console.log('END - updateBedDb()')
         },
     },
 })

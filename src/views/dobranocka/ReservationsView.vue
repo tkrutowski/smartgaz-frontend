@@ -13,7 +13,7 @@ import {UtilsService} from "@/service/UtilsService.ts";
 import type {AxiosError} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
 import {RentService} from "@/service/RentService.ts";
-import {BedType, type Reservation, type ReservationBed, ReservationStatus} from "@/types/Room.ts";
+import {type Bed, BedStatus, BedType, type Reservation, type ReservationBed, ReservationStatus} from "@/types/Room.ts";
 import type {Customer} from "@/types/Customer.ts";
 import moment from "moment/moment";
 import router from "@/router";
@@ -63,6 +63,30 @@ const submitDelete = async () => {
   if (reservationTemp.value) {
     await reservationStore.deleteReservationDb(reservationTemp.value.id)
         .then(() => {
+          const today = moment().startOf("day");
+          const startDate = moment(reservationTemp.value?.startDate).startOf("day");
+          const endDate = moment(reservationTemp.value?.endDate).startOf("day");
+          //update beds status if today
+          if (today.isBetween(startDate, endDate, null, [])) {
+            reservationTemp.value.beds.flatMap((resBed: ReservationBed) => resBed.bed).forEach((item: Bed) => {
+              item.status = BedStatus.AVAILABLE;
+              roomStore.updateBedDb(item).then(() => {
+                toast.add({
+                  severity: "info",
+                  summary: "Potwierdzenie",
+                  detail: "Zmieniono status łóżka na 'Dostępne'.",
+                  life: 3000,
+                });
+              }).catch(() => {
+                toast.add({
+                  severity: "error",
+                  summary: "Błąd podczas usuwania rezerwacji.",
+                  detail: "Nie udało się zmienić statusu łóżka na 'Dostępne'",
+                  life: 5000,
+                });
+              })
+            })
+          }
           toast.add({
             severity: "success",
             summary: "Potwierdzenie",

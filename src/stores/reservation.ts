@@ -106,16 +106,16 @@ export const useReservationStore = defineStore('reservation', {
                     ...resBed,
                     bed: {
                         ...resBed.bed,
-                        type: Object.keys(BedType).find(
-                            key => BedType[key as keyof typeof BedType] ===  resBed.bed.type
-                        ),
+                        // type: Object.keys(BedType).find(
+                        //     key => BedType[key as keyof typeof BedType] ===  resBed.bed.type
+                        // ),
                         status: Object.keys(BedStatus).find(
                             key => BedStatus[key as keyof typeof BedStatus] === resBed.bed.status
                         )
                     }
                 }))
             };
-            console.log('START - addReservationDb()', payload)
+            console.log('START - addReservationDb() payload', payload)
             const response = await httpCommon.post(`/v1/dobranocka/reservation`, payload)
             this.reservations.push(response.data)
             console.log('END - addReservationDb()')

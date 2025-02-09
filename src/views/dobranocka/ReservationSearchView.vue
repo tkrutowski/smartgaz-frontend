@@ -22,6 +22,7 @@ import moment from "moment";
 import {RentService} from "@/service/RentService.ts";
 import {Button} from "primevue";
 import router from "@/router";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const customerStore = useCustomerStore();
 const reservationStore = useReservationStore();
@@ -54,7 +55,9 @@ const toggleBedSelection = (bed: Bed) => {
 //PAYMENT
 //
 const checkin = ref<Date | null>(null)
+const previousCheckin = ref<Date | null>(null)
 const checkout = ref<Date | null>(null)
+const previousCheckout = ref<Date | null>(null)
 const advance = ref<number>(0)
 const deposit = ref<number>(0)
 
@@ -156,18 +159,23 @@ const reservationInProgress = ref<boolean>(false);
 function saveReservation() {
   reservationInProgress.value = true;
   const reservation: Reservation = {
-    id:0,
+    id: 0,
     customer: selectedCustomer.value,
     advance: advance.value,
     startDate: checkin.value,
     endDate: checkout.value,
     deposit: deposit.value,
-    reservationStatus: advance.value === 0 ? ReservationStatus.NO_PAYMENT :(advance.value > 0 && advance.value < calculateNetSum()) ? ReservationStatus.ADVANCE_PAID : ReservationStatus.FULLY_PAID,
+    reservationStatus: advance.value === 0 ? ReservationStatus.NO_PAYMENT : (advance.value > 0 && advance.value < calculateNetSum()) ? ReservationStatus.ADVANCE_PAID : ReservationStatus.FULLY_PAID,
     info: info.value,
     beds: selectedBeds.value.map((item: Bed) => {
+      const today = moment().startOf("day");
+      const startDate = moment(checkin.value).startOf("day");
       const dto: ReservationBed = {
-        id:0,
-        bed: item,
+        id: 0,
+        bed: {
+          ...item,
+          status: startDate.isSameOrBefore(today) ? BedStatus.OCCUPIED : item.status,
+        },
         priceDay: item.priceDay,
         priceMonth: item.priceMonth
       }
@@ -176,6 +184,29 @@ function saveReservation() {
   }
   reservationStore.addReservationDb(reservation)
       .then(() => {
+        const today = moment().startOf("day");
+        const startDate = moment(checkin.value).startOf("day");
+        //update beds status if today
+        if (startDate.isSameOrBefore(today)) {
+          reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed).forEach((item: Bed) => {
+            item.status = BedStatus.OCCUPIED;
+            roomStore.updateBedDb(item).then(() => {
+              toast.add({
+                severity: "info",
+                summary: "Potwierdzenie",
+                detail: "Zmieniono status łóżka na 'Zajęte'.",
+                life: 3000,
+              });
+            }).catch((reason: AxiosError) => {
+              toast.add({
+                severity: "error",
+                summary: "Błąd podczas dodawania rezerwacji.",
+                detail: "Nie udało się zmienić statusu łóżka na 'Zajęte'",
+                life: 5000,
+              });
+            })
+          })
+        }
         toast.add({
           severity: "success",
           summary: "Potwierdzenie",
@@ -183,12 +214,10 @@ function saveReservation() {
           life: 3000,
         });
         //reset
-        selectedCustomer.value = null;
-        selectedBeds.value = [];
-        availableBeds.value.clear();
-        if (window.location.href.includes(router.resolve({ name: 'ReservationSearch' }).href)) {
-          const redirect = JSON.stringify({ name: 'ReservationSearch' })
-          router.push({ path: '/refresh', query: { redirect: redirect } })
+        reset();
+        if (window.location.href.includes(router.resolve({name: 'ReservationSearch'}).href)) {
+          const redirect = JSON.stringify({name: 'ReservationSearch'})
+          router.push({path: '/refresh', query: {redirect: redirect}})
         }
       }).catch((reason: AxiosError) => {
     toast.add({
@@ -201,6 +230,8 @@ function saveReservation() {
     reservationInProgress.value = false
   })
 }
+
+
 //change price to all beds if first change
 watch(
     () => selectedBeds.value[0]?.priceDay,
@@ -249,17 +280,70 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateScreenSize);
 });
+
+//reset
+const showResetConfirmationDialog = ref<boolean>(false);
+const confirmDeleteReservation = () => {
+  if (selectedBeds.value.length > 0) {
+    showResetConfirmationDialog.value = true;
+  }
+};
+
+function submitReset() {
+  reset()
+  const redirect = JSON.stringify({name: 'ReservationSearch'})
+  router.push({path: '/refresh', query: {redirect: redirect}})
+}
+
+function submitCancel() {
+  showResetConfirmationDialog.value = false;
+  if (previousCheckin.value != null) {
+    checkin.value = previousCheckin.value;
+    previousCheckin.value = null;
+  }
+  if (previousCheckout.value != null) {
+    checkout.value = previousCheckout.value;
+    previousCheckout.value = null;
+  }
+}
+
+function reset() {
+  console.log("Reset form")
+  selectedCustomer.value = null;
+  selectedBeds.value = [];
+  availableBeds.value.clear();
+}
+
+watch(checkin, (newVal, oldVal) => {
+  if (selectedBeds.value.length > 0)
+    previousCheckin.value = oldVal;
+  previousCheckout.value=null
+})
+watch(checkout, (newVal, oldVal) => {
+  if (selectedBeds.value.length > 0)
+    previousCheckout.value = oldVal;
+  previousCheckin.value = null;
+})
 </script>
 
 <template>
+  <ConfirmationDialog
+      v-model:visible="showResetConfirmationDialog"
+      msg="Zmiana daty spowoduje zresetowanie formularza."
+      label="zatwierdz"
+      @save="submitReset"
+      @cancel="submitCancel"
+  />
   <TheMenuDobranocka/>
   <div class="flex flex-row gap-4 mt-4 justify-center">
     <FloatLabel variant="on">
-      <DatePicker v-model="checkin" inputId="checkin" showIcon iconDisplay="input" date-format="yy-mm-dd"/>
+      <DatePicker v-model="checkin" inputId="checkin" showIcon iconDisplay="input" date-format="yy-mm-dd"
+                  @date-select="confirmDeleteReservation"/>
       <label for="checkin"> {{ isMd ? 'Data zameldowania' : 'Zameldowanie' }} </label>
     </FloatLabel>
     <FloatLabel variant="on">
-      <DatePicker v-model="checkout" inputId="checkout" showIcon iconDisplay="input" date-format="yy-mm-dd"/>
+      <DatePicker v-model="checkout" inputId="checkout" showIcon iconDisplay="input" date-format="yy-mm-dd"
+                  @date-select="confirmDeleteReservation"/>
       <label for="checkout">{{ isMd ? 'Data wymeldowania' : 'Wymeldowanie' }}</label>
     </FloatLabel>
 
@@ -289,9 +373,11 @@ onUnmounted(() => {
                 <div class="flex flex-row  items-center justify-center gap-2">
                   <Checkbox :checked="selectedBeds.includes(bed)"
                             @change="toggleBedSelection(bed)" :value="bed"/>
-                  <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
-                       id="single-bed"
-                       class="w-12 h-12 fill-current text-black dark:text-white">
+                  <svg
+                      v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE"
+                      xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+                      id="single-bed"
+                      class="w-12 h-12 fill-current text-black dark:text-white">
                     <path
                         d="M53.69 38.13c.004-.044.014-.085.014-.13v-3a4.004 4.004 0 0 0-4-4h-.778V19a2.002 2.002 0 0 0-2-2H17.074a2.002 2.002 0 0 0-2 2v12h-.778a4.004 4.004 0 0 0-4 4v3c0 .045.01.086.013.13A1.998 1.998 0 0 0 9 40v8a1.972 1.972 0 0 0 .097.583A.986.986 0 0 0 9 49v2a1 1 0 0 0 2 0v-1h42v1a1 1 0 0 0 2 0v-2a.985.985 0 0 0-.097-.417A1.972 1.972 0 0 0 55 48v-8a1.998 1.998 0 0 0-1.31-1.87ZM17.075 19h29.852v12h-7.977a2.5 2.5 0 0 0-2.449-3h-9a2.5 2.5 0 0 0-2.45 3h-7.976ZM27 30.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5ZM12.296 35a2.002 2.002 0 0 1 2-2h35.408a2.002 2.002 0 0 1 2 2l.001 3h-39.41ZM11 48v-8h42l.001 8Z"></path>
                   </svg>
@@ -359,9 +445,11 @@ onUnmounted(() => {
                  v-for="(bed) in selectedBeds" key="bed.id">
 
               <div class="flex flex-row  items-center justify-center gap-2">
-                <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
-                     id="single-bed"
-                     class="w-12 h-12 fill-current text-black dark:text-white">
+                <svg
+                    v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE"
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+                    id="single-bed"
+                    class="w-12 h-12 fill-current text-black dark:text-white">
                   <path
                       d="M53.69 38.13c.004-.044.014-.085.014-.13v-3a4.004 4.004 0 0 0-4-4h-.778V19a2.002 2.002 0 0 0-2-2H17.074a2.002 2.002 0 0 0-2 2v12h-.778a4.004 4.004 0 0 0-4 4v3c0 .045.01.086.013.13A1.998 1.998 0 0 0 9 40v8a1.972 1.972 0 0 0 .097.583A.986.986 0 0 0 9 49v2a1 1 0 0 0 2 0v-1h42v1a1 1 0 0 0 2 0v-2a.985.985 0 0 0-.097-.417A1.972 1.972 0 0 0 55 48v-8a1.998 1.998 0 0 0-1.31-1.87ZM17.075 19h29.852v12h-7.977a2.5 2.5 0 0 0-2.449-3h-9a2.5 2.5 0 0 0-2.45 3h-7.976ZM27 30.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5ZM12.296 35a2.002 2.002 0 0 1 2-2h35.408a2.002 2.002 0 0 1 2 2l.001 3h-39.41ZM11 48v-8h42l.001 8Z"></path>
                 </svg>
