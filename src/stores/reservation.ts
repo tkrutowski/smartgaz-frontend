@@ -3,7 +3,6 @@ import httpCommon from '../config/http-common'
 import {
     type Bed,
     BedStatus,
-    BedType,
     type Reservation,
     type ReservationBed,
     ReservationStatus,

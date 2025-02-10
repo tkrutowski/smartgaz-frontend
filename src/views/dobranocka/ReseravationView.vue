@@ -67,7 +67,7 @@ const toggleBedSelection = (bed: Bed) => {
 };
 
 const findNewBeds = () => {
-  reservationStore.getAvailableBedsFromDb(new Date(reservation.value.startDate!), new Date(reservation.value.endDate!), 0)
+  reservationStore.getAvailableBedsFromDb(new Date(reservation.value.startDate!), new Date(reservation.value.endDate!))
       .then((rooms: Room[]) => {
         if (rooms.length === 0) {
           toast.add({
@@ -246,8 +246,8 @@ onMounted(async () => {
   />
   <EditReservationDatesDialog
       v-model:visible="showEditReservationDatesDialog"
-      :checkin="reservation.startDate"
-      :checkout="reservation.endDate"
+      :checkin="moment(reservation.startDate!).format('YYYY-MM-DD')"
+      :checkout="moment(reservation.endDate!).format('YYYY-MM-DD')"
       :beds="reservation.beds"
       :reservation-id="reservation.id"
       @save="submitDateChange"

@@ -198,6 +198,7 @@ function saveReservation() {
                 life: 3000,
               });
             }).catch((reason: AxiosError) => {
+              console.error(reason);
               toast.add({
                 severity: "error",
                 summary: "Błąd podczas dodawania rezerwacji.",
@@ -314,12 +315,12 @@ function reset() {
   availableBeds.value.clear();
 }
 
-watch(checkin, (newVal, oldVal) => {
+watch(checkin, (_, oldVal) => {
   if (selectedBeds.value.length > 0)
     previousCheckin.value = oldVal;
   previousCheckout.value=null
 })
-watch(checkout, (newVal, oldVal) => {
+watch(checkout, (_, oldVal) => {
   if (selectedBeds.value.length > 0)
     previousCheckout.value = oldVal;
   previousCheckin.value = null;

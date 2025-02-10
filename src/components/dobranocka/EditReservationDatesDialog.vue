@@ -10,6 +10,10 @@ import moment from "moment";
 const roomStore = useRoomStore();
 const reservationStore = useReservationStore();
 
+interface BedWithAvailability extends Bed {
+  availability: string;
+}
+
 const props = defineProps({
   checkin: {
     type: String,
@@ -34,7 +38,7 @@ const emit = defineEmits<{
 }>()
 
 const save = () => {
-  emit('save', checkin.value, checkout.value)
+  emit('save', checkin.value!, checkout.value!)
 }
 
 const cancel = () => {
@@ -45,7 +49,7 @@ const prevCheckin = ref<Date | null>(null)
 const checkout = ref<Date | null>(null)
 const prevCheckout = ref<Date | null>(null)
 const reservationId = ref<number>(0)
-const beds = ref<Bed[]>([])
+const beds = ref<BedWithAvailability[]>([])
 const searching = ref<boolean>(false)
 const isSearchBtnDisabled = computed(() => {
   return (

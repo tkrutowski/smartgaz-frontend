@@ -67,8 +67,8 @@ const submitDelete = async () => {
           const startDate = moment(reservationTemp.value?.startDate).startOf("day");
           const endDate = moment(reservationTemp.value?.endDate).startOf("day");
           //update beds status if today
-          if (today.isBetween(startDate, endDate, null, [])) {
-            reservationTemp.value.beds.flatMap((resBed: ReservationBed) => resBed.bed).forEach((item: Bed) => {
+          if (today.isBetween(startDate, endDate, null, '[]')) {
+            reservationTemp.value?.beds.flatMap((resBed: ReservationBed) => resBed.bed).forEach((item: Bed) => {
               item.status = BedStatus.AVAILABLE;
               roomStore.updateBedDb(item).then(() => {
                 toast.add({
