@@ -7,6 +7,7 @@ import {useRoomStore} from "@/stores/rooms.ts";
 import {useReservationStore} from "@/stores/reservation.ts";
 import type {Bed, Reservation, ReservationBed} from "@/types/Room.ts";
 import {UtilsService} from "@/service/UtilsService.ts";
+import ReservationInfoDialog from "@/components/dobranocka/ReservationInfoDialog.vue";
 
 const reservationStore = useReservationStore();
 const roomStore = useRoomStore();
@@ -25,7 +26,7 @@ function calculateTableHeight() {
   const tableHeaderHeight = tableHeader ? tableHeader.clientHeight : 50; // Domyślnie 50px
 
   const availableHeight = windowHeight - menuHeight - tableHeaderHeight;
-  scrollHeight.value =  availableHeight < 350 ? '350px' : `${availableHeight}px`;
+  scrollHeight.value = availableHeight < 350 ? '350px' : `${availableHeight}px`;
 }
 
 //
@@ -172,10 +173,28 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", calculateTableHeight);
 });
+
+//display INFO
+const showReservationInfoDialog = ref<boolean>(false);
+const reservationInfo = ref<Reservation | undefined>(undefined);
+function displayInfo(bed: Bed, date: Date) {
+  const reservation = getReservation(bed, date);
+  console.log("displayInfo", reservation);
+  if (reservation){
+  console.log("displayInfo IF", reservation);
+    reservationInfo.value = reservation;
+    showReservationInfoDialog.value = true;
+  }
+}
 </script>
 
 <template>
   <TheMenuDobranocka/>
+  <ReservationInfoDialog
+      v-model:visible="showReservationInfoDialog"
+      :reservation="reservationInfo!"
+      @ok="showReservationInfoDialog = false"
+  />
   <Panel>
     <template #header>
       <div class="w-full flex flex-col md:flex-row justify-center items-center gap-4">
@@ -213,10 +232,12 @@ onBeforeUnmount(() => {
             <div class="w-full h-full py-3 "
                  :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), getBodyOpacity(day))}`">
 
-              <p class="relative" :class="{'bg-red-600': isBedReserved(data, day),
-                            'cut-end': isLastReservedDay(data, day), 'cut-start': isFirstReservedDay(data, day)}">&emsp;
+              <p class="relative" :class="{'bg-red-600 hover:cursor-pointer': isBedReserved(data, day),
+                            'cut-end': isLastReservedDay(data, day), 'cut-start': isFirstReservedDay(data, day)}"
+                 @click="displayInfo(data, day)">&emsp;
                 <span v-if="isSecondReservedDay(data, day)"
-                      class="absolute left-0 top-0 z-[9] text-white whitespace-nowrap text-center"
+                      class="absolute left-0 top-0 z-[9] text-white whitespace-nowrap text-center "
+                      @click="displayInfo(data, day)"
                       :style="{ width: getReservationLength(data, day) * 50 + 'px' }"
                 >{{ getReservation(data, day)?.customer?.name }}</span></p>
             </div>
@@ -231,9 +252,11 @@ onBeforeUnmount(() => {
 ::v-deep(.p-datatable-tbody > tr > td) {
   padding: 0 !important;
 }
+
 .cut-end {
   clip-path: polygon(0 0, 100% 0, 50% 100%, 0 100%);
 }
+
 .cut-start {
   clip-path: polygon(50% 0, 100% 0, 100% 100%, 0 100%);
 }

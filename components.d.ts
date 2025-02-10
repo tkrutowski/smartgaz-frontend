@@ -39,6 +39,7 @@ declare module 'vue' {
     Password: typeof import('primevue/password')['default']
     ProgressSpinner: typeof import('primevue/progressspinner')['default']
     RefreshComponent: typeof import('./src/components/RefreshComponent.vue')['default']
+    ReservationInfoDialog: typeof import('./src/components/dobranocka/ReservationInfoDialog.vue')['default']
     RoomDisplay: typeof import('./src/components/dobranocka/RoomDisplay.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
