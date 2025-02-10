@@ -227,7 +227,6 @@ const getCustomerLabel = (customer:Customer) =>{
   <Panel>
     <template #header>
       <div class="w-full flex justify-center gap-4">
-        <p class="text-center text-xl md:text-2xl">LISTA FAKTUR</p>
         <div v-if="invoiceStore.loadingInvoices">
           <ProgressSpinner
               class="ml-3"

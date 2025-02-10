@@ -82,12 +82,12 @@ const routes = [
   },
   //---------------------------------------------- DOBRANOCKA_INVOICE--------------------------------------------
   {
-    path: '/dobranocka/invoice/all',
+    path: '/dobranocka/finance/invoice/all',
     name: 'Invoices',
     component: InvoicesView,
   },
   {
-    path: '/dobranocka/invoice/:isEdit/:invoiceId',
+    path: '/dobranocka/finance/invoice/:isEdit/:invoiceId',
     name: 'Invoice',
     component: InvoiceView,
     props: true,

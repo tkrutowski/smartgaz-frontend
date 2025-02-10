@@ -228,7 +228,6 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
   <Panel>
     <template #header>
       <div class="w-full flex justify-center gap-4">
-        <p class="text-center text-xl md:text-2xl">LISTA REZERWACJI</p>
         <div v-if="reservationStore.loadingReservation">
           <ProgressSpinner
               class="ml-3"

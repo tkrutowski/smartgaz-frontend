@@ -272,7 +272,7 @@ const showErrorName = () => {
         <template #header>
           <OfficeIconButton
               title="Powrót do listy pokoi"
-              icon="pi pi-fw pi-list"
+              icon="pi pi-fw pi-table"
               @click="() => router.push({ name: 'Rooms' })"
           />
           <div class="w-full flex justify-center gap-4">

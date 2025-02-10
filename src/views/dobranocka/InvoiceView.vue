@@ -446,7 +446,7 @@ const paymentMethods = Object.keys(PaymentMethod).map((key) => ({
         <template #header>
           <OfficeIconButton
               title="Powrót do listy faktur"
-              icon="pi pi-fw pi-clipboard"
+              icon="pi pi-fw pi-table"
               @click="() => router.push({ name: 'Invoices' })"
           />
           <div class="w-full flex justify-center">

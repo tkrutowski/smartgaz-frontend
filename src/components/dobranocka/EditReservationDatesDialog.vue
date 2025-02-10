@@ -142,7 +142,7 @@ function reset(): void {
             </svg>
 
             <span class="text-xl text-color break-all whitespace-nowrap" style="word-break: break-word;">
-              {{ roomStore.getRoomByBed(bed.id)!.name }} <wbr>/ {{ bed.name }}
+              {{ roomStore.getRoomByBed(bed.id)!.name }} /<wbr> {{ bed.name }}
           </span>
           </div>
 
@@ -171,9 +171,4 @@ function reset(): void {
     </template>
   </Dialog>
 </template>
-<style scoped>
-::v-deep(.p-dialog-content) {
-  padding-left: .25rem !important;
-  padding-right: .25rem;
-}
-</style>
+

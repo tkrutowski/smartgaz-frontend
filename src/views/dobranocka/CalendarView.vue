@@ -25,7 +25,7 @@ function calculateTableHeight() {
   const tableHeaderHeight = tableHeader ? tableHeader.clientHeight : 50; // Domyślnie 50px
 
   const availableHeight = windowHeight - menuHeight - tableHeaderHeight;
-  scrollHeight.value = `${availableHeight}px`;
+  scrollHeight.value =  availableHeight < 350 ? '350px' : `${availableHeight}px`;
 }
 
 //
@@ -131,7 +131,7 @@ function getReservationLength(bed: Bed, date: Date): number {
   const reservation = reservationStore.reservations.find((reservation: Reservation) =>
       reservation.beds
           .flatMap((resBed: ReservationBed) => resBed.bed)
-          .some((b: Bed) => b.id === bed.id)&&
+          .some((b: Bed) => b.id === bed.id) &&
       moment(date).isBetween(moment(reservation.startDate), moment(reservation.endDate), 'day', '[]')
   );
   if (!reservation) return 1;
@@ -149,7 +149,7 @@ const scrollToToday = () => {
   if (dataTableRef.value) {
     const columns = (dataTableRef.value as any).$el.querySelectorAll(".p-datatable-tbody > tr:first-child > td ");
     if (columns[todayIndex.value]) {
-      columns[todayIndex.value].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+      columns[todayIndex.value].scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
     }
   }
 };
@@ -164,7 +164,6 @@ onMounted(async () => {
   window.addEventListener("resize", calculateTableHeight);
 
   todayIndex.value = dateRange.value.findIndex(day => moment(day).isSame(moment(), "day"));
-console.log("todayIndex",todayIndex.value)
   nextTick(() => {
     scrollToToday();
   });
@@ -180,26 +179,23 @@ onBeforeUnmount(() => {
   <Panel>
     <template #header>
       <div class="w-full flex flex-col md:flex-row justify-center items-center gap-4">
-
-        <div class="flex">
-          <p class="text-center text-xl md:text-2xl">Kalendarz</p>
-          <div v-if="reservationStore.loadingReservation || roomStore.loadingRooms">
-            <ProgressSpinner
-                class="ml-3"
-                style="width: 35px; height: 35px"
-                stroke-width="5"
-            />
-          </div>
-        </div>
         <FloatLabel variant="on" class="">
           <label for="on_label">Zakres dat</label>
           <DatePicker v-model="selectedDateRange" selectionMode="range" dateFormat="dd.mm.yy"/>
         </FloatLabel>
+        <div v-if="reservationStore.loadingReservation || roomStore.loadingRooms">
+          <ProgressSpinner
+              class="ml-3"
+              style="width: 35px; height: 35px"
+              stroke-width="5"
+          />
+        </div>
       </div>
     </template>
-    <DataTable v-if="!reservationStore.loadingReservation && !roomStore.loadingRooms" ref="dataTableRef" :value="roomStore.getAllBeds" scrollable :scrollHeight="scrollHeight">
-      <template #empty> <p class="text-lg text-red-500">Nie znaleziono rezerwacji.</p> </template>
-      <Column field="name" header="Łóżko" body-class="py-2" frozen >
+    <DataTable v-if="!reservationStore.loadingReservation && !roomStore.loadingRooms" ref="dataTableRef"
+               :value="roomStore.getAllBeds" scrollable :scrollHeight="scrollHeight">
+      <template #empty><p class="text-lg text-red-500">Nie znaleziono rezerwacji.</p></template>
+      <Column field="name" header="Łóżko" body-class="py-2" frozen>
         <template #body="{data, field}">
           <p class="">{{ data[field] }}</p>
         </template>
@@ -210,18 +206,19 @@ onBeforeUnmount(() => {
             <div class="flex flex-col items-center justify-center w-full"
                  :class="{'bg-green-600 rounded-lg text-white font-bold px-2': isToday(day)}">
               <p>{{ moment(day).format("ddd") }}</p>
-              <p>{{ moment(day).format("D") }}.{{moment(day).format("MM")}}</p>
+              <p>{{ moment(day).format("D") }}.{{ moment(day).format("MM") }}</p>
             </div>
           </template>
-          <template #body="{data}" >
+          <template #body="{data}">
             <div class="w-full h-full py-3 "
                  :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), getBodyOpacity(day))}`">
 
               <p class="relative" :class="{'bg-red-600': isBedReserved(data, day),
                             'cut-end': isLastReservedDay(data, day), 'cut-start': isFirstReservedDay(data, day)}">&emsp;
-             <span v-if="isSecondReservedDay(data, day)" class="absolute left-0 top-0 z-[9] text-white whitespace-nowrap text-center"
-                   :style="{ width: getReservationLength(data, day) * 50 + 'px' }"
-             >{{ getReservation(data, day)?.customer?.name}}</span></p>
+                <span v-if="isSecondReservedDay(data, day)"
+                      class="absolute left-0 top-0 z-[9] text-white whitespace-nowrap text-center"
+                      :style="{ width: getReservationLength(data, day) * 50 + 'px' }"
+                >{{ getReservation(data, day)?.customer?.name }}</span></p>
             </div>
           </template>
         </Column>
