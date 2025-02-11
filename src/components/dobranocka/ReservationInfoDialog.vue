@@ -2,8 +2,9 @@
 import OfficeButton from '@/components/OfficeButton.vue'
 import {type PropType, ref, watch} from "vue";
 import {type Reservation} from "@/types/Room.ts";
+import {useRoomStore} from "@/stores/rooms.ts";
 
-
+const roomStore = useRoomStore();
 const props = defineProps({
   reservation: {
     type: Object as PropType<Reservation>,
@@ -56,9 +57,10 @@ watch(
         <p class="text-sm">Płatność:<span class="ml-2 font-semibold">co tutaj?</span></p>
       </div>
     </Fieldset>
-    <Fieldset legend="???">
-      <div class="flex flex-col gap-2 justify-center">
-        <p class="text-sm">coś jeszcze?</p>
+    <Fieldset legend="Rezerwacja">
+        <p class="text-sm">Data pobytu:<span class="ml-2 font-semibold">{{ reservation.startDate}} - {{ reservation.endDate }}</span></p>
+      <div class="flex flex-col gap-2 justify-center" v-for="bed in reservation.beds" :key="bed.id">
+        <p class="text-sm">Miejsce:<span class="ml-2 font-semibold">{{roomStore.getRoomByBed(bed.bed.id)?.name}} / {{bed.bed.name}}</span></p>
       </div>
     </Fieldset>
     <template #footer>

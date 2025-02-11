@@ -8,6 +8,7 @@ import {useReservationStore} from "@/stores/reservation.ts";
 import type {Bed, Reservation, ReservationBed} from "@/types/Room.ts";
 import {UtilsService} from "@/service/UtilsService.ts";
 import ReservationInfoDialog from "@/components/dobranocka/ReservationInfoDialog.vue";
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
 
 const reservationStore = useReservationStore();
 const roomStore = useRoomStore();
@@ -177,13 +178,21 @@ onBeforeUnmount(() => {
 //display INFO
 const showReservationInfoDialog = ref<boolean>(false);
 const reservationInfo = ref<Reservation | undefined>(undefined);
+
 function displayInfo(bed: Bed, date: Date) {
   const reservation = getReservation(bed, date);
   console.log("displayInfo", reservation);
-  if (reservation){
-  console.log("displayInfo IF", reservation);
+  if (reservation) {
+    console.log("displayInfo IF", reservation);
     reservationInfo.value = reservation;
     showReservationInfoDialog.value = true;
+  }
+}
+
+function getRoomShortName(roomName: string | undefined) {
+  if (roomName) {
+    const index = roomName.indexOf(" - ");
+    return index !== -1 ? roomName.substring(0, index).trim() : roomName.trim();
   }
 }
 </script>
@@ -214,9 +223,15 @@ function displayInfo(bed: Bed, date: Date) {
     <DataTable v-if="!reservationStore.loadingReservation && !roomStore.loadingRooms" ref="dataTableRef"
                :value="roomStore.getAllBeds" scrollable :scrollHeight="scrollHeight">
       <template #empty><p class="text-lg text-red-500">Nie znaleziono rezerwacji.</p></template>
-      <Column field="name" header="Łóżko" body-class="py-2" frozen>
+      <Column field="name" frozen style="z-index: 7">
+        <template #header>
+          <OfficeIconButton icon="pi pi-home" @click="scrollToToday()"/>
+        </template>
         <template #body="{data, field}">
-          <p class="">{{ data[field] }}</p>
+          <p class="h-full py-3 pr-2 text-nowrap"
+             :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), .3)}`">
+            {{ getRoomShortName(roomStore.getRoomByBed(data.id)?.name) }} / {{ data[field] }}
+          </p>
         </template>
       </Column>
       <template v-for="(day) in dateRange" :key="day">
@@ -236,7 +251,7 @@ function displayInfo(bed: Bed, date: Date) {
                             'cut-end': isLastReservedDay(data, day), 'cut-start': isFirstReservedDay(data, day)}"
                  @click="displayInfo(data, day)">&emsp;
                 <span v-if="isSecondReservedDay(data, day)"
-                      class="absolute left-0 top-0 z-[9] text-white whitespace-nowrap text-center "
+                      class="absolute left-0 top-0 z-[6] text-white whitespace-nowrap text-center "
                       @click="displayInfo(data, day)"
                       :style="{ width: getReservationLength(data, day) * 50 + 'px' }"
                 >{{ getReservation(data, day)?.customer?.name }}</span></p>
