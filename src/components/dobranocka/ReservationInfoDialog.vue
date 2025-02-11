@@ -37,13 +37,13 @@ watch(
       <p class="text-sm">Nazwa:<span class="ml-2 font-semibold"> {{reservation?.customer?.name}} {{reservation?.customer?.firstName}}</span></p>
         <p class="text-sm">
           Tel:
-          <a href="tel:{{ reservation?.customer?.phone }}" class="ml-2 font-semibold">
+          <a :href="'tel:' + reservation?.customer?.phone" class="ml-2 font-semibold">
             {{ reservation?.customer?.phone }}
           </a>
         </p>
         <p class="text-sm">
           Mail:
-          <a href="mailto:{{ reservation?.customer?.mail }}" class="ml-2 font-semibold">
+          <a :href="'mailto:' + reservation?.customer?.mail" class="ml-2 font-semibold">
             {{ reservation?.customer?.mail }}
           </a>
         </p>
