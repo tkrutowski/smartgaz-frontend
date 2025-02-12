@@ -1,5 +1,6 @@
 import {BedStatus, BedType, ReservationStatus} from "../types/Room.ts";
 import {PaymentMethod} from "../types/Invoice.ts";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 export const RentService = {
 
@@ -40,24 +41,24 @@ export const RentService = {
         }
     },
 
-    getPaymentMethodsKeyValue () {
+    getPaymentMethodsOption () {
         return Object.keys(PaymentMethod).map((key) => ({
-            label: PaymentMethod[key as keyof typeof PaymentMethod], // wartość
-            value: key, // klucz
+            label: TranslationService.translateEnum("PaymentMethod", key), // klucz
+            value: PaymentMethod[key as keyof typeof PaymentMethod], // wartość
         }));
     },
 
-    getBedTypeKeyValue () {
+    getBedTypeOption () {
         return Object.keys(BedType).map((key) => ({
-            label: BedType[key as keyof typeof BedType], // wartość
-            value: key, // klucz
+            label: TranslationService.translateEnum("BedType", key), // klucz
+            value: BedType[key as keyof typeof BedType], // wartość
         }));
     },
 
-    getBedStatusKeyValue () {
+    getBedStatusOption () {
         return Object.keys(BedStatus).map((key) => ({
-            label: BedStatus[key as keyof typeof BedStatus], // wartość
-            value: key, // klucz
+            label: TranslationService.translateEnum("BedStatus", key), // klucz
+            value: BedStatus[key as keyof typeof BedStatus], // wartość
         }));
     }
 }

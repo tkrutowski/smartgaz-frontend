@@ -6,8 +6,8 @@ import {useCustomerStore} from "@/stores/customers.ts";
 import {useRoomStore} from "@/stores/rooms.ts";
 import {useReservationStore} from "@/stores/reservation.ts";
 import {RentService} from "@/service/RentService.ts";
-import {UtilsService} from "@/service/UtilsService.ts";
 import moment from "moment";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const reservationStore = useReservationStore();
 const customerStore = useCustomerStore();
@@ -18,7 +18,7 @@ function getBedReservationEndDate(bedToCheck: Bed): string | null {
   const today = moment().startOf('day').toDate();
 
   // Sprawdzamy, czy łóżko jest aktualnie zajęte
-  if (bedToCheck.status.toString() === UtilsService.getEnumKeyByValue(BedStatus, BedStatus.OCCUPIED)) {
+  if (bedToCheck.status === BedStatus.OCCUPIED) {
 
     // Filtrujemy rezerwacje tylko dla tego łóżka, które są aktywne dzisiaj
     const bedReservations = reservationStore.reservations
@@ -50,7 +50,7 @@ function getNextBedReservationStartDate(bedToCheck: Bed): string | null {
   const today = moment().startOf('day').toDate();
 
   // Sprawdzamy, czy łóżko NIE jest aktualnie zajęte
-  if (bedToCheck.status.toString() !== UtilsService.getEnumKeyByValue(BedStatus, BedStatus.OCCUPIED)) {
+  if (bedToCheck.status !== BedStatus.OCCUPIED) {
     // Filtrujemy rezerwacje tylko dla tego łóżka, które mają datę rozpoczęcia w przyszłości
     const futureReservations = reservationStore.reservations
         .filter(reservation =>
@@ -93,7 +93,7 @@ onMounted(async () => {
              :style="{borderColor: `${roomStore.getRoomColorByBed(bed.id)}`}"
              v-for="(bed) in beds" key="bed.id">
           <div class="flex flex-row  items-center justify-center gap-2">
-            <svg v-if="bed.type.toString() === UtilsService.getEnumKeyByValue(BedType, BedType.SINGLE)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+            <svg v-if="bed.type.toString() === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                  id="single-bed"
                  class="w-12 h-12 fill-current text-black dark:text-white">
               <path
@@ -107,7 +107,7 @@ onMounted(async () => {
 
             <span class="text-lg md:text-xl text-color break-all whitespace-nowrap">{{ roomStore.getRoomByBed(bed.id)!.name }} /<wbr> {{ bed.name }}</span>
             <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)">
-                 {{UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)}} {{getBedReservationEndDate(bed)}} {{getNextBedReservationStartDate(bed)}}</Tag>
+                 {{TranslationService.translateEnum("BedStatus", bed.status.toString())}} {{getBedReservationEndDate(bed)}} {{getNextBedReservationStartDate(bed)}}</Tag>
           </div>
         </div>
       </div>

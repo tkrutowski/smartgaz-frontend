@@ -6,6 +6,7 @@ import {BedStatus, BedType, type Room} from "@/types/Room.ts";
 import {UtilsService} from "@/service/UtilsService.ts";
 import router from "@/router";
 import {RentService} from "@/service/RentService.ts";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const props = defineProps({
   room: {
@@ -64,7 +65,7 @@ const editRoom = () => {
 
           <div class="flex flex-row  items-center gap-2">
 
-            <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+            <svg v-if="bed.type === BedType.SINGLE" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                  id="single-bed"
                  class="w-12 h-12 fill-current text-black dark:text-white">
               <path
@@ -77,7 +78,7 @@ const editRoom = () => {
             </svg>
 
             <span class="text-xl">{{ bed.name }}</span>
-            <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)" :value="UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)" ></Tag>
+            <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)" :value="TranslationService.translateEnum('BedStatus', bed.status)" ></Tag>
           </div>
           <div class="flex gap-4">
             <span class="text-sm">Cena/dzień:  <span

@@ -38,18 +38,17 @@ export interface InvoiceDto {
   invoiceItems: InvoiceItem[];
 }
 
-
 export enum PaymentStatus {
-  PAID = "Spłacony",
-  TO_PAY = "Do zapłaty",
-  OVER_DUE = "Przeterminowany",
-  ALL = "Wszystkie"
+  PAID = "PAID",
+  TO_PAY = "TO_PAY",
+  OVER_DUE = "OVER_DUE",
+  ALL = "ALL"
 }
 
 export enum PaymentMethod {
-  CASH = "gotówka",
-  CASH_LATE = "gotówka terminowa",
-  TRANSFER = "przelew",
+  CASH = "CASH",
+  CASH_LATE = "CASH_LATE",
+  TRANSFER = "TRANSFER",
 }
 
 export interface Vat {

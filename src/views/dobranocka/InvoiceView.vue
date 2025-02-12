@@ -15,6 +15,7 @@ import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
 import type {AxiosError} from "axios";
 import moment from "moment";
 import type {Customer} from "@/types/Customer.ts";
+import {RentService} from "@/service/RentService.ts";
 
 const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
@@ -34,7 +35,7 @@ const invoice = ref<Invoice>({
   invoiceItems: [],
 });
 
-const selectedPaymentMethod = ref<string | undefined>(UtilsService.getEnumKeyByValue(PaymentMethod, PaymentMethod.TRANSFER));
+const selectedPaymentMethod = ref<PaymentMethod>(PaymentMethod.TRANSFER);
 
 const invoiceItem = ref<InvoiceItem>({
   id: 0,
@@ -139,7 +140,7 @@ async function newInvoice() {
     invoice.value.invoiceNumber = invoiceYear.value + "/" + invoiceNumber.value;
     const invoiceDate = moment(invoice.value.invoiceDate);
     invoice.value.paymentDate = invoiceDate.add(paymentDeadline.value, 'day').toDate()
-    invoice.value.paymentMethod = UtilsService.getEnumValueByKey(PaymentMethod, selectedPaymentMethod.value!.toString() as keyof typeof PaymentMethod);
+    invoice.value.paymentMethod = selectedPaymentMethod.value;
     await invoiceStore.addInvoiceDb(invoice.value)
         .then(() => {
           toast.add({
@@ -424,10 +425,6 @@ const getCustomerLabel = (option: Customer) =>{
   // console.log("getCustomerLabel",option);
   return `${option.name} ${option.firstName}`;
 }
-const paymentMethods = Object.keys(PaymentMethod).map((key) => ({
-  label: PaymentMethod[key as keyof typeof PaymentMethod], // wartość
-  value: key, // klucz
-}));
 </script>
 
 <template>
@@ -581,7 +578,7 @@ const paymentMethods = Object.keys(PaymentMethod).map((key) => ({
                   <Select
                       id="payment-method"
                       v-model="selectedPaymentMethod"
-                      :options="paymentMethods"
+                      :options="RentService.getPaymentMethodsOption()"
                       option-label="label"
                       option-value="value"
                       required

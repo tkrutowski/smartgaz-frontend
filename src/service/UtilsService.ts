@@ -76,22 +76,22 @@ export const UtilsService = {
         return "VAT_0"; // Domyślna wartość
     },
 
-    getEnumValueByKey<T>(enumObject: T, key: keyof T): T[keyof T] | undefined {
-        // console.log('getEnumValueByKey', enumObject, key);
-        return enumObject[key];
-    },
-
-    getEnumKeyByValue<T>(enumObject: T, value: string): keyof T | undefined {
-        // console.log("getEnumKeyByValue - enumObject", enumObject, "value", value);
-        const result: keyof T | undefined = Object.keys(enumObject as Object).find((key: string) => {
-            const enumValue = enumObject[key as keyof T] as string;
-            // console.log(`Comparing enumValue: ${enumValue} with value: ${value}`);
-            return enumValue === value;
-        }) as keyof T | undefined;
-
-        // console.log("getEnumKeyByValue - result", result);
-        return result;
-    },
+    // getEnumValueByKey<T>(enumObject: T, key: keyof T): T[keyof T] | undefined {
+    //     // console.log('getEnumValueByKey', enumObject, key);
+    //     return enumObject[key];
+    // },
+    //
+    // getEnumKeyByValue<T>(enumObject: T, value: string): keyof T | undefined {
+    //     console.log("getEnumKeyByValue - enumObject", enumObject, "value", value);
+    //     const result: keyof T | undefined = Object.keys(enumObject as Object).find((key: string) => {
+    //         const enumValue = enumObject[key as keyof T] as string;
+    //         console.log(`Comparing enumValue: ${enumValue} with value: ${value}`);
+    //         return enumValue === value;
+    //     }) as keyof T | undefined;
+    //
+    //     // console.log("getEnumKeyByValue - result", result);
+    //     return result;
+    // },
 
     getMonthLabel(count: number): string {
         if (count < 0) {

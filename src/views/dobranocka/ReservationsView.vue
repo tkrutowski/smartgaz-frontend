@@ -17,6 +17,7 @@ import {type Bed, BedStatus, BedType, type Reservation, type ReservationBed, Res
 import type {Customer} from "@/types/Customer.ts";
 import moment from "moment/moment";
 import router from "@/router";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const roomStore = useRoomStore();
 const customerStore = useCustomerStore();
@@ -371,14 +372,14 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
       <Column header="Status" field="reservationStatus" sortable :filterMenuStyle="{ width: '14rem' }"
               :show-filter-match-modes="false">
         <template #body="{ data }">
-          <Tag :value="UtilsService.getEnumValueByKey(ReservationStatus, data.reservationStatus)"
+          <Tag :value="TranslationService.translateEnum('ReservationStatus', data.reservationStatus)"
                :severity="RentService.getSeverityReservation(data.reservationStatus)"/>
         </template>
         <template #filter="{ filterModel }">
           <MultiSelect v-model="filterModel.value" :options="Object.keys(ReservationStatus)" placeholder="Wybierz..."
                        :maxSelectedLabels="0">
             <template #option="slotProps">
-              <Tag :value="UtilsService.getEnumValueByKey(ReservationStatus, slotProps.option)"
+              <Tag :value="TranslationService.translateEnum('ReservationStatus', slotProps.option)"
                    :severity="RentService.getSeverityReservation(slotProps.option)"/>
             </template>
           </MultiSelect>
@@ -416,7 +417,7 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
                v-for="(bed) in slotProps.data.beds" key="bed.id">
 
             <div class="flex flex-row  items-center justify-center gap-2">
-              <svg v-if="UtilsService.getEnumValueByKey(BedType ,bed.bed.type.toString() as keyof typeof BedType) === BedType.SINGLE"
+              <svg v-if="bed.bed.type === BedType.SINGLE"
                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                    id="single-bed"
                    class="w-12 h-12 fill-current text-black dark:text-white">

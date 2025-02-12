@@ -1,22 +1,22 @@
 import type {Customer} from "./Customer.ts";
 
 export enum BedType {
-  SINGLE = "pojedyńcze",
-  DOUBLE = "podwójne"
+  SINGLE = "SINGLE",
+  DOUBLE = "DOUBLE"
 }
 export enum BedStatus {
-  AVAILABLE = "Dostępny",
-  BOOKED = "Zarezerwowany",
-  OCCUPIED = "Zajęty",
-  TO_CLEAN = "Do sprzątania",
-  CLEANED = "Posprzątany",
-  UNAVAILABLE = "Niedostępny"
+  AVAILABLE = "AVAILABLE",
+  BOOKED = "BOOKED",
+  OCCUPIED = "OCCUPIED",
+  TO_CLEAN = "TO_CLEAN",
+  CLEANED = "CLEANED",
+  UNAVAILABLE = "UNAVAILABLE"
 }
 export enum ReservationStatus {
-  NO_PAYMENT = "Brak wpłaty",
-  ADVANCE_PAID = "Wpłacony zadatek",
-  FULLY_PAID = "Wpłacona całość",
-  CANCELLED = "Anulowana",
+  NO_PAYMENT = "NO_PAYMENT",
+  ADVANCE_PAID = "ADVANCE_PAID",
+  FULLY_PAID = "FULLY_PAID",
+  CANCELLED = "CANCELLED",
 }
 export interface Room {
   id: number

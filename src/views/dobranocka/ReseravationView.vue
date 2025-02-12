@@ -25,6 +25,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import router from "@/router";
 import {RentService} from "@/service/RentService.ts";
 import EditReservationDatesDialog from "@/components/dobranocka/EditReservationDatesDialog.vue";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const route = useRoute();
 const reservationStore = useReservationStore();
@@ -305,7 +306,7 @@ onMounted(async () => {
         <div class="flex flex-col md:flex-row gap-2">
           <div class="flex flex-row items-center justify-center gap-2">
             <svg
-                v-if="UtilsService.getEnumValueByKey(BedType ,bed.bed.type.toString() as keyof typeof BedType)  === BedType.SINGLE"
+                v-if="bed.bed.type  === BedType.SINGLE"
                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                 id="single-bed"
                 class="w-12 h-12 fill-current text-black dark:text-white">
@@ -381,7 +382,7 @@ onMounted(async () => {
             <Checkbox :checked="selectedBeds.includes(bed)"
                       @change="toggleBedSelection(bed)" :value="bed"/>
             <svg
-                v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE"
+                v-if="bed.type === BedType.SINGLE"
                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                 id="single-bed"
                 class="w-12 h-12 fill-current text-black dark:text-white">
@@ -396,7 +397,7 @@ onMounted(async () => {
 
             <span class="text-xl">{{ bed.name }}</span>
             <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)"
-                 :value="UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)"></Tag>
+                 :value="TranslationService.translateEnum('BedStatus', bed.status)"></Tag>
           </div>
         </div>
       </div>

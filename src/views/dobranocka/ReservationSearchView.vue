@@ -23,6 +23,7 @@ import {RentService} from "@/service/RentService.ts";
 import {Button} from "primevue";
 import router from "@/router";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const customerStore = useCustomerStore();
 const reservationStore = useReservationStore();
@@ -375,7 +376,7 @@ watch(checkout, (_, oldVal) => {
                   <Checkbox :checked="selectedBeds.includes(bed)"
                             @change="toggleBedSelection(bed)" :value="bed"/>
                   <svg
-                      v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE"
+                      v-if="bed.type === BedType.SINGLE"
                       xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                       id="single-bed"
                       class="w-12 h-12 fill-current text-black dark:text-white">
@@ -390,7 +391,7 @@ watch(checkout, (_, oldVal) => {
 
                   <span class="text-xl">{{ bed.name }}</span>
                   <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)"
-                       :value="UtilsService.getEnumValueByKey(BedStatus, bed.status.toString() as keyof typeof BedStatus)"></Tag>
+                       :value="TranslationService.translateEnum('BedStatus', bed.status)"></Tag>
                 </div>
               </div>
             </div>
@@ -447,7 +448,7 @@ watch(checkout, (_, oldVal) => {
 
               <div class="flex flex-row  items-center justify-center gap-2">
                 <svg
-                    v-if="UtilsService.getEnumValueByKey(BedType ,bed.type.toString() as keyof typeof BedType) === BedType.SINGLE"
+                    v-if="bed.type === BedType.SINGLE"
                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
                     id="single-bed"
                     class="w-12 h-12 fill-current text-black dark:text-white">

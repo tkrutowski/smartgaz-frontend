@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {FilterMatchMode, FilterOperator} from '@primevue/core/api';
-import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "@/types/Invoice.ts";
+import {type Invoice, type InvoiceItem, PaymentStatus} from "@/types/Invoice.ts";
 import OfficeButton from "@/components/OfficeButton.vue";
 import router from "@/router";
 import StatusButton from "@/components/StatusButton.vue";
@@ -16,6 +16,7 @@ import type {AxiosError, AxiosResponse} from "axios";
 import type {DataTablePageEvent} from "primevue/datatable";
 import {FinanceService} from "@/service/FinanceService.ts";
 import type {Customer} from "@/types/Customer.ts";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
@@ -67,16 +68,16 @@ const changeStatusConfirmationMessage = computed(() => {
     return `Czy chcesz zmienić status faktury nr <b>${
         invoiceTemp.value.invoiceNumber
     }</b> na <b>${
-         invoiceTemp.value.paymentStatus.toString() === UtilsService.getEnumKeyByValue(PaymentStatus, PaymentStatus.PAID)
-            ? PaymentStatus.TO_PAY
-            : PaymentStatus.PAID
+         invoiceTemp.value.paymentStatus === PaymentStatus.PAID
+            ? TranslationService.translateEnum('PaymentStatus', PaymentStatus.TO_PAY)
+            : TranslationService.translateEnum('PaymentStatus', PaymentStatus.PAID)
     }</b>?`;
   return "No message";
 });
 const submitChangeStatus = async () => {
   console.log("submitChangeStatus()");
   if (invoiceTemp.value) {
-    let newStatus: PaymentStatus = invoiceTemp.value.paymentStatus.toString() === "PAID" ? PaymentStatus.TO_PAY : PaymentStatus.PAID;
+    let newStatus: PaymentStatus = invoiceTemp.value.paymentStatus === "PAID" ? PaymentStatus.TO_PAY : PaymentStatus.PAID;
     await invoiceStore.updateInvoiceStatusDb(invoiceTemp.value.idInvoice, newStatus)
         .then(() => {
           toast.add({
@@ -347,7 +348,7 @@ const getCustomerLabel = (customer:Customer) =>{
       <!--      PAYMENT METHOD-->
       <Column field="paymentMethod" header="Rodzaj płatności" :sortable="true">
         <template #body="{ data }">
-          {{ UtilsService.getEnumValueByKey(PaymentMethod, data.paymentMethod) }}
+          {{ TranslationService.translateEnum("PaymentMethod", data.paymentMethod) }}
         </template>
       </Column>
 
