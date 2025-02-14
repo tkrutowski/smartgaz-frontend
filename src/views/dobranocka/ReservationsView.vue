@@ -35,6 +35,7 @@ const initFilters = () => {
     advance: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
     deposit: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
     reservationStatus: {value: null, matchMode: FilterMatchMode.IN},
+    number: {value: null, matchMode: FilterMatchMode.CONTAINS},
   };
 }
 initFilters();
@@ -247,7 +248,7 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
         striped-rows
         removable-sort
         paginator
-        sort-field="invoiceNumber"
+        sort-field="number"
         :sort-order="-1"
         :rows="reservationStore.rowsPerPage"
         :rows-per-page-options="[5, 10, 20, 50]"
@@ -297,6 +298,13 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
       </template>
 
       <Column expander style="width: 5rem"/>
+      <!-- NUMBER -->
+      <Column field="number" header="Nr" :sortable="true">
+        <template #filter="{ filterModel }">
+          <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..."/>
+        </template>
+      </Column>
+
       <!--      CUSTOMER  -->
       <Column
           header="Nazwa klienta"

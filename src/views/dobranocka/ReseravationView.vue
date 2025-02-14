@@ -37,6 +37,7 @@ const btnSaveDisabled = ref<boolean>(false);
 const btnShowBusy = ref<boolean>(false);
 const reservation = ref<Reservation>({
   id: 0,
+  number: "",
   customer: null,
   startDate: null,
   endDate: null,
@@ -214,7 +215,7 @@ onMounted(async () => {
   if (customerStore.customers.length <= 1) {
     await customerStore.refreshCustomers()
   }
-  if (roomStore.rooms.length === 0) {
+  if (roomStore.rooms.length <= 1) {
     await roomStore.refreshRooms()
   }
   console.log("onMounted EDIT", route.params);
@@ -258,7 +259,6 @@ onMounted(async () => {
     <template #header>
       <div class="flex flex-col md:flex-row w-full">
         <div class="flex gap-3 order-2 md:order-1">
-
           <OfficeIconButton
               title="Powrót do listy rezerwacji"
               icon="pi pi-fw pi-table"
@@ -267,9 +267,13 @@ onMounted(async () => {
           <OfficeButton btn-type="office-regular" label="ŁÓŻKO" icon="pi pi-plus" icon-pos="left" @click="findNewBeds"
                         :loading="reservationStore.loadingReservation"/>
         </div>
-        <div class="flex w-full gap-2 justify-center items-center order-1 md:order-2">
-
-          <p class="text-lg md:text-2xl  ">Rezerwacja:
+        <div  class="flex w-full gap-2 justify-center items-center order-1 md:order-2">
+          <ProgressSpinner v-if="reservationStore.loadingReservation"
+              class=""
+              style="width: 35px; height: 35px"
+              stroke-width="5"
+          />
+          <p v-else class="text-lg md:text-2xl  ">Nr {{reservation.number }},
             <span class="text-lg md:text-2xl text-primary "> {{ moment(reservation.startDate).format("DD-MM-YYYY") }} -
           {{ moment(reservation.endDate).format("DD-MM-YYYY") }}</span></p>
           <OfficeIconButton

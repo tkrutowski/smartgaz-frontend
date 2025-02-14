@@ -157,10 +157,12 @@ function findAvailable() {
 //
 const reservationInProgress = ref<boolean>(false);
 
-function saveReservation() {
+async function saveReservation() {
   reservationInProgress.value = true;
+  const newNumber = await reservationStore.findNewReservationNumber(moment().year());
   const reservation: Reservation = {
     id: 0,
+    number: moment().year() + "/" + newNumber,
     customer: selectedCustomer.value,
     advance: advance.value,
     startDate: checkin.value,

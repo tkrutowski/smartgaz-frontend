@@ -36,6 +36,7 @@ export interface Bed {
 
 export interface Reservation {
   id: number
+  number: string
   customer: Customer | null
   beds: ReservationBed[]
   startDate: Date | null

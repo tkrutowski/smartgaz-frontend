@@ -39,12 +39,31 @@ export const useReservationStore = defineStore('reservation', {
         //
         async getReservations() {
             console.log('START - getReservations()')
-            if (this.reservations.length === 0 && !this.loadingReservation) {
+            if (this.reservations.length <= 1 && !this.loadingReservation) {
                 await this.refreshReservations()
             }
             console.log('END - getReservations()')
 
             return this.reservations
+        },
+
+        //
+        //FIND LAST RESERVATION NUMBER
+        //
+        async findNewReservationNumber(year: number): Promise<number> {
+            console.log("findReservationNumber(", year, ")");
+            if (this.reservations.length <= 1) {
+                console.log("loading reservations from DB");
+                await this.getReservations();
+            }
+            const newNo = this.reservations
+                .filter((value) => value.number.includes(String(year)))
+                .map((value) => value.number.split("/")[1])
+                .map((value) => parseInt(value))
+                .sort((a, b) => a - b)
+                .pop();
+            // console.log("last fv number: ", newNo);
+            return newNo ? newNo + 1 : 1;
         },
 
         //-------------------------------------------------------DATABASE
