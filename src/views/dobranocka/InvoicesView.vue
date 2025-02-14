@@ -32,7 +32,7 @@ const initFilters = () => {
     invoiceDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
     paymentDate: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
     amount: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
-    invoiceNumber: {value: null, matchMode: FilterMatchMode.CONTAINS},
+    number: {value: null, matchMode: FilterMatchMode.CONTAINS},
   };
 }
 initFilters();
@@ -66,7 +66,7 @@ const confirmStatusChange = (invoice: Invoice) => {
 const changeStatusConfirmationMessage = computed(() => {
   if (invoiceTemp.value)
     return `Czy chcesz zmienić status faktury nr <b>${
-        invoiceTemp.value.invoiceNumber
+        invoiceTemp.value.number
     }</b> na <b>${
          invoiceTemp.value.paymentStatus === PaymentStatus.PAID
             ? TranslationService.translateEnum('PaymentStatus', PaymentStatus.TO_PAY)
@@ -85,7 +85,7 @@ const submitChangeStatus = async () => {
             summary: "Potwierdzenie",
             detail:
                 "Zaaktualizowano status faktury nr: " +
-                invoiceTemp.value?.invoiceNumber,
+                invoiceTemp.value?.number,
             life: 3000,
           });
         })
@@ -94,7 +94,7 @@ const submitChangeStatus = async () => {
             severity: "error",
             summary: reason.message,
             detail: "Błąd podczas aktualizacji statusu faktury nr: " +
-                invoiceTemp.value?.invoiceNumber,
+                invoiceTemp.value?.number,
             life: 5000,
           });
         })
@@ -113,7 +113,7 @@ const confirmDeleteInvoice = (invoice: Invoice) => {
 };
 const deleteConfirmationMessage = computed(() => {
   if (invoiceTemp.value)
-    return `Czy chcesz usunąc fakturę nr <b>${invoiceTemp.value.invoiceNumber}</b>?`;
+    return `Czy chcesz usunąc fakturę nr <b>${invoiceTemp.value.number}</b>?`;
   return "No message";
 });
 const submitDelete = async () => {
@@ -124,14 +124,14 @@ const submitDelete = async () => {
           toast.add({
             severity: "success",
             summary: "Potwierdzenie",
-            detail: "Usunięto fakturę nr: " + invoiceTemp.value?.invoiceNumber,
+            detail: "Usunięto fakturę nr: " + invoiceTemp.value?.number,
             life: 3000,
           });
         })
         .catch((reason: AxiosError) => {
           toast.add({
             severity: "error",
-            summary: "Nie usunięto faktury nr: " + invoiceTemp.value?.invoiceNumber,
+            summary: "Nie usunięto faktury nr: " + invoiceTemp.value?.number,
             detail: (reason?.response?.data as { message: string }).message,
             life: 5000,
           });
@@ -246,13 +246,13 @@ const getCustomerLabel = (customer:Customer) =>{
         striped-rows
         removable-sort
         paginator
-        sort-field="invoiceNumber"
+        sort-field="number"
         :sort-order="-1"
         :rows="invoiceStore.rowsPerPage"
         :rows-per-page-options="[5, 10, 20, 50]"
         table-style="min-width: 50rem"
         filter-display="menu"
-        :global-filter-fields="['customer.name', 'invoiceNumber', 'sellDate']"
+        :global-filter-fields="['customer.name', 'number', 'sellDate']"
         @page="handleRowsPerPageChange"
     >
       <template #header>
@@ -297,7 +297,7 @@ const getCustomerLabel = (customer:Customer) =>{
 
       <Column expander style="width: 5rem"/>
       <!--      INVOICE NUMBER  -->
-      <Column field="invoiceNumber" header="Nr faktury" :sortable="true">
+      <Column field="number" header="Nr faktury" :sortable="true">
         <template #filter="{ filterModel }">
           <InputText v-model="filterModel.value" type="text" placeholder="Wpisz tutaj..."/>
         </template>
@@ -393,7 +393,7 @@ const getCustomerLabel = (customer:Customer) =>{
                 @click="
                 downloadPdf(
                   slotProps.data.idInvoice,
-                  slotProps.data.invoiceNumber
+                  slotProps.data.number
                 )
               "
             />
@@ -413,7 +413,7 @@ const getCustomerLabel = (customer:Customer) =>{
       </Column>
       <template #expansion="slotProps">
         <div class="p-3">
-          <h4>Szczególy faktury nr {{ slotProps.data.invoiceNumber }}</h4>
+          <h4>Szczególy faktury nr {{ slotProps.data.number }}</h4>
           <DataTable :value="slotProps.data.invoiceItems">
             <Column field="name">
               <template #header>

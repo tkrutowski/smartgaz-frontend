@@ -154,12 +154,12 @@ export const useInvoiceStore = defineStore("invoice", {
                 await this.getInvoicesFromDb("ALL");
             }
             const newNo = this.invoices
-                .filter((value) => value.invoiceNumber.includes(String(year)))
-                .map((value) => value.invoiceNumber.split("/")[1])
+                .filter((value) => value.number.includes(String(year)))
+                .map((value) => value.number.split("/")[1])
                 .map((value) => parseInt(value))
                 .sort((a, b) => a - b)
                 .pop();
-            console.log("new fv number: ", newNo);
+            // console.log("last fv number: ", newNo);
             this.loadingInvoiceNo = false;
             return newNo ? newNo + 1 : 1;
         },

@@ -25,7 +25,7 @@ const toast = useToast();
 const invoice = ref<Invoice>({
   idInvoice: 0,
   customer: null,
-  invoiceNumber: "",
+  number: "",
   sellDate: null,
   invoiceDate: null,
   paymentMethod: PaymentMethod.TRANSFER,
@@ -137,7 +137,7 @@ async function newInvoice() {
     showError("Uzupełnij brakujące elementy");
   } else {
     btnSaveDisabled.value = true;
-    invoice.value.invoiceNumber = invoiceYear.value + "/" + invoiceNumber.value;
+    invoice.value.number = invoiceYear.value + "/" + invoiceNumber.value;
     const invoiceDate = moment(invoice.value.invoiceDate);
     invoice.value.paymentDate = invoiceDate.add(paymentDeadline.value, 'day').toDate()
     invoice.value.paymentMethod = selectedPaymentMethod.value;
@@ -146,7 +146,7 @@ async function newInvoice() {
           toast.add({
             severity: "success",
             summary: "Potwierdzenie",
-            detail: "Zapisano fakturę nr: " + invoice.value.invoiceNumber,
+            detail: "Zapisano fakturę nr: " + invoice.value.number,
             life: 3000,
           });
           setTimeout(() => {
@@ -173,14 +173,14 @@ async function editInvoice() {
   if (isNotValid()) {
     showError("Uzupełnij brakujące elementy");
   } else {
-    invoice.value.invoiceNumber = invoiceYear.value + "/" + invoiceNumber.value;
+    invoice.value.number = invoiceYear.value + "/" + invoiceNumber.value;
     btnSaveDisabled.value = true;
     await invoiceStore.updateInvoiceDb(invoice.value)
         .then(() => {
           toast.add({
             severity: "success",
             summary: "Potwierdzenie",
-            detail: "Zaaktualizowano fakturę nr: " + invoice.value.invoiceNumber,
+            detail: "Zaaktualizowano fakturę nr: " + invoice.value.number,
             life: 3000,
           });
           setTimeout(() => {
@@ -201,7 +201,7 @@ async function editInvoice() {
 }
 
 function onInvoiceNumberUpdate( newNumber: number) {
-  const year = invoiceYear.value; // Rok wpisany w innym polu (v-model)
+  const year = invoiceYear.value;
   // Ustaw następny wolny numer faktury
   invoiceNumber.value = findNextInvoiceNumber(year, newNumber, invoiceStore.invoices);
 }
@@ -209,13 +209,13 @@ function onInvoiceNumberUpdate( newNumber: number) {
 function findNextInvoiceNumber(year: number, invoiceNumber: number, invoices: Invoice[]): number {
   // Filtruj faktury dla danego roku
   const currentYearInvoices = invoices.filter(invoice => {
-    const [invoiceYear] = invoice.invoiceNumber.split("/");
+    const [invoiceYear] = invoice.number.split("/");
     return parseInt(invoiceYear) === year;
   });
   // Wyciągnij istniejące numery faktur dla danego roku
   const usedNumbers = currentYearInvoices
       .map(invoice => {
-        const parts = invoice.invoiceNumber.split("/"); // Podziel numer faktury na części
+        const parts = invoice.number.split("/"); // Podziel numer faktury na części
         const invoiceNo = parseInt(parts[1], 10); // Pobierz drugą część (numer faktury) jako liczbę
         return isNaN(invoiceNo) ? null : invoiceNo; // Sprawdź, czy wynik to liczba
       })
@@ -226,6 +226,7 @@ function findNextInvoiceNumber(year: number, invoiceNumber: number, invoices: In
   while (usedNumbers.includes(nextNumber)) {
     nextNumber++;
   }
+  // console.log("findNextInvoiceNumber - nextNumber",nextNumber)
   return nextNumber;
 }
 
@@ -347,11 +348,11 @@ onMounted(async () => {
             }
 
             invoiceNumber.value = Number(
-                invoice.value.invoiceNumber.split("/")[1]
+                invoice.value.number.split("/")[1]
             );
-            invoiceYear.value = Number(invoice.value.invoiceNumber.split("/")[0]);
+            invoiceYear.value = Number(invoice.value.number.split("/")[0]);
             editedInvoiceNumber = Number(
-                invoice.value.invoiceNumber.split("/")[1]
+                invoice.value.number.split("/")[1]
             );
           }
         })
@@ -450,7 +451,7 @@ const getCustomerLabel = (option: Customer) =>{
             <span class="text-2xl">
               {{
                 isEdit
-                    ? `Edycja faktury nr: ${invoice.invoiceNumber}`
+                    ? `Edycja faktury nr: ${invoice.number}`
                     : "Nowa faktura"
               }}
             </span>

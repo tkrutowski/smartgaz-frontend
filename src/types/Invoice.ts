@@ -3,7 +3,7 @@ import type {Customer} from "./Customer.ts";
 export interface Invoice {
   idInvoice: number;
   customer: Customer | null;
-  invoiceNumber: string;
+  number: string;
   sellDate: Date | null;
   invoiceDate:  Date | null;
   paymentDate:  Date | null;
@@ -27,7 +27,7 @@ export interface InvoiceItem {
 export interface InvoiceDto {
   idInvoice: number;
   customer: string;
-  invoiceNumber: string;
+  number: string;
   sellDate: Date | null;
   invoiceDate:  Date | null;
   paymentMethod: string;
