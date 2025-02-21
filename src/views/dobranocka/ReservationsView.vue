@@ -61,7 +61,6 @@ const deleteConfirmationMessage = computed(() => {
   return "No message";
 });
 const submitDelete = async () => {
-  console.log("submitDelete()");
   if (reservationTemp.value) {
     await reservationStore.deleteReservationDb(reservationTemp.value.id)
         .then(() => {
@@ -214,6 +213,14 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
   }
   return 0;
 };
+
+const checkCustomers = computed(() => {
+  if (reservationStore.selectedReservations.length > 0) {
+    return !reservationStore.selectedReservations
+        .every((rez: Reservation) => rez.customer?.id === reservationStore.selectedReservations[0]?.customer?.id)
+  } else return true;
+})
+
 </script>
 
 
@@ -243,6 +250,7 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
         v-if="!reservationStore.loadingReservation"
         v-model:expanded-rows="expandedRows"
         v-model:filters="filters"
+        v-model:selection="reservationStore.selectedReservations"
         :value="reservationStore.reservations"
         :loading="reservationStore.loadingReservation"
         striped-rows
@@ -259,14 +267,28 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
     >
       <template #header>
         <div class="flex justify-between">
-          <router-link
-              :to="{ name: 'ReservationSearch'}"
-              style="text-decoration: none"
-          >
-            <OfficeButton v-if="isMd" class="" text="Nowa rezerwacja" btn-type="office-regular"/>
-            <OfficeButton v-else class="" text="Nowa " btn-type="office-regular"/>
-          </router-link>
-          <div class="flex gap-4">
+          <div class="flex gap-2">
+            <router-link
+                :to="{ name: 'ReservationSearch'}"
+                style="text-decoration: none"
+            >
+              <OfficeButton v-if="isMd" class="" text="Rezerwacja" btn-type="office-regular" icon="pi pi-plus"
+                            icon-pos="left"/>
+              <OfficeButton v-else class="" text="Rez" btn-type="office-regular" icon="pi pi-plus" icon-pos="left"/>
+            </router-link>
+            <router-link
+                :to="{ name: 'Invoice', params: {isEdit: 'false', invoiceId: -1}}"
+                style="text-decoration: none"
+            >
+              <OfficeButton v-if="isMd" class="" text="Faktura" btn-type="office-regular" icon="pi pi-plus"
+                            icon-pos="left"
+                            :btn-disabled="reservationStore.selectedReservations.length === 0 || checkCustomers"/>
+              <OfficeButton v-else class="" text="FV" btn-type="office-regular" icon="pi pi-plus" icon-pos="left"
+                            :btn-disabled="reservationStore.selectedReservations.length === 0 || checkCustomers"/>
+            </router-link>
+            {{ checkCustomers }}
+          </div>
+          <div class="flex gap-2">
             <IconField icon-position="left">
               <InputIcon>
                 <i class="pi pi-search"/>
@@ -298,6 +320,16 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
       </template>
 
       <Column expander style="width: 5rem"/>
+
+      <Column selectionMode="multiple" header-style="width: 3rem" :exportable="false">
+        <template #body="{ data }">
+          <Checkbox v-model="reservationStore.selectedReservations"
+                    :value="data"
+                    :disabled="data.invoiceId !== 0"
+          />
+        </template>
+      </Column>
+
       <!-- NUMBER -->
       <Column field="number" header="Nr" :sortable="true">
         <template #filter="{ filterModel }">
@@ -360,7 +392,7 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
       </Column>
 
       <!--      DEPOSIT-->
-      <Column field="deposit" header="Depozyt" style="min-width: 120px" dataType="numeric">
+      <Column field="deposit" header="Kaucja" style="min-width: 120px" dataType="numeric">
         <template #body="{data, field}">
           {{ UtilsService.formatCurrency(data[field]) }}
         </template>
@@ -478,5 +510,14 @@ const calculateRentPeriod = (checkin: Date, checkout: Date) => {
 <style scoped>
 .p-datatable .p-datatable-tbody > tr > td {
   text-align: center !important;
+}
+
+/* Styl podczas najechania myszką */
+.p-datatable >>> .p-datatable-tbody > tr:hover {
+  filter: brightness(0.75); /* Przyciemnia każdy kolor o 25% */
+}
+/* removed Select All checkbox*/
+:deep(.p-datatable thead .p-datatable-column-header-content .p-checkbox) {
+  display: none;
 }
 </style>

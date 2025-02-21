@@ -92,23 +92,7 @@ const calculateRentPeriod = computed(() => {
 });
 const calculateRentPeriodArray = computed(() => {
   if (checkin.value != null && checkout.value != null) {
-    const start = moment(checkin.value);
-    const end = moment(checkout.value);
-
-    const months = end.diff(start, 'months');
-
-    const startAfterFullMonths = start.clone().add(months, 'months');
-
-    const days = end.diff(startAfterFullMonths, 'days');
-
-    if (months > 0 && days === 0) {
-      return [months, 0];
-    } else if (months > 0 && days > 0) {
-      return [months, days];
-    } else {
-      const totalDays = end.diff(start, 'days');
-      return [0, totalDays];
-    }
+    return RentService.calculateRentPeriodArray(checkin.value, checkout.value);
   }
   return [0, 0];
 });
@@ -162,6 +146,7 @@ async function saveReservation() {
   const newNumber = await reservationStore.findNewReservationNumber(moment().year());
   const reservation: Reservation = {
     id: 0,
+    invoiceId: 0,
     number: moment().year() + "/" + newNumber,
     customer: selectedCustomer.value,
     advance: advance.value,
@@ -312,7 +297,6 @@ function submitCancel() {
 }
 
 function reset() {
-  console.log("Reset form")
   selectedCustomer.value = null;
   selectedBeds.value = [];
   availableBeds.value.clear();
@@ -321,7 +305,7 @@ function reset() {
 watch(checkin, (_, oldVal) => {
   if (selectedBeds.value.length > 0)
     previousCheckin.value = oldVal;
-  previousCheckout.value=null
+  previousCheckout.value = null
 })
 watch(checkout, (_, oldVal) => {
   if (selectedBeds.value.length > 0)
@@ -494,7 +478,7 @@ watch(checkout, (_, oldVal) => {
               <FloatLabel variant="on">
                 <InputNumber v-model="deposit" inputId="deposit" mode="currency" currency="PLN" locale="pl-PL"
                              fluid @focus="UtilsService.selectText"/>
-                <label for="deposit" class="font-bold block mb-1 ml-1"> Depozyt (opcjonalnia) </label>
+                <label for="deposit" class="font-bold block mb-1 ml-1"> Kaucja (opcjonalnia) </label>
               </FloatLabel>
             </div>
 
@@ -521,7 +505,7 @@ watch(checkout, (_, oldVal) => {
               <p class="text-left">Zaliczka:
                 <span class="text-red-500"> {{ UtilsService.formatCurrency(advance) }}</span>
               </p>
-              <p class="text-left">Depozyt:
+              <p class="text-left">Kaucja:
                 <span class="text-red-500"> {{ UtilsService.formatCurrency(deposit) }}</span>
               </p>
             </div>

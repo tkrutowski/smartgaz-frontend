@@ -38,6 +38,7 @@ export interface Reservation {
   id: number
   number: string
   customer: Customer | null
+  invoiceId: number;
   beds: ReservationBed[]
   startDate: Date | null
   endDate: Date | null

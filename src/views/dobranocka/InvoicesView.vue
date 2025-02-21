@@ -75,7 +75,6 @@ const changeStatusConfirmationMessage = computed(() => {
   return "No message";
 });
 const submitChangeStatus = async () => {
-  console.log("submitChangeStatus()");
   if (invoiceTemp.value) {
     let newStatus: PaymentStatus = invoiceTemp.value.paymentStatus === "PAID" ? PaymentStatus.TO_PAY : PaymentStatus.PAID;
     await invoiceStore.updateInvoiceStatusDb(invoiceTemp.value.idInvoice, newStatus)
@@ -117,7 +116,6 @@ const deleteConfirmationMessage = computed(() => {
   return "No message";
 });
 const submitDelete = async () => {
-  console.log("submitDelete()");
   if (invoiceTemp.value) {
     await invoiceStore.deleteInvoiceDb(invoiceTemp.value.idInvoice)
         .then(() => {
@@ -475,3 +473,9 @@ const getCustomerLabel = (customer:Customer) =>{
     </DataTable>
   </Panel>
 </template>
+<style scoped>
+/* Styl podczas najechania myszką */
+.p-datatable >>> .p-datatable-tbody > tr:hover {
+  filter: brightness(0.75); /* Przyciemnia każdy kolor o 25% */
+}
+</style>

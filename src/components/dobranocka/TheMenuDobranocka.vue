@@ -7,7 +7,7 @@ import {useRoute} from 'vue-router';
 const route = useRoute();
 const authorizationStore = useAuthorizationStore()
 const activeMenu = computed(() => {
-  console.log('activeMenu', route.path)
+  // console.log('activeMenu', route.path)
   if (route.path.includes('/home')) return 'Tablica';
   if (route.path.includes('/customer')) return 'Klienci';
   if (route.path.includes('/finance')) return 'Finanse';

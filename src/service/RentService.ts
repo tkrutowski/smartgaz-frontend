@@ -1,6 +1,7 @@
 import {BedStatus, BedType, ReservationStatus} from "../types/Room.ts";
 import {PaymentMethod} from "../types/Invoice.ts";
 import {TranslationService} from "@/service/TranslationService.ts";
+import moment from "moment";
 
 export const RentService = {
 
@@ -41,24 +42,45 @@ export const RentService = {
         }
     },
 
-    getPaymentMethodsOption () {
+    getPaymentMethodsOption() {
         return Object.keys(PaymentMethod).map((key) => ({
             label: TranslationService.translateEnum("PaymentMethod", key), // klucz
             value: PaymentMethod[key as keyof typeof PaymentMethod], // wartość
         }));
     },
 
-    getBedTypeOption () {
+    getBedTypeOption() {
         return Object.keys(BedType).map((key) => ({
             label: TranslationService.translateEnum("BedType", key), // klucz
             value: BedType[key as keyof typeof BedType], // wartość
         }));
     },
 
-    getBedStatusOption () {
+    getBedStatusOption() {
         return Object.keys(BedStatus).map((key) => ({
             label: TranslationService.translateEnum("BedStatus", key), // klucz
             value: BedStatus[key as keyof typeof BedStatus], // wartość
         }));
+    },
+
+    calculateRentPeriodArray(startDate: Date, endDate: Date): [number, number] {
+        // console.log("calculateRentPeriodArray: ", startDate, endDate);
+        const start = moment(startDate);
+        const end = moment(endDate);
+
+        const months = end.diff(start, 'months');
+
+        const startAfterFullMonths = start.clone().add(months, 'months');
+
+        const days = end.diff(startAfterFullMonths, 'days');
+
+        if (months > 0 && days === 0) {
+            return [months, 0];
+        } else if (months > 0 && days > 0) {
+            return [months, days];
+        } else {
+            const totalDays = end.diff(start, 'days');
+            return [0, totalDays];
+        }
     }
 }

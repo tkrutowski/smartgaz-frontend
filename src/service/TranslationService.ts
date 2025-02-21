@@ -1,7 +1,6 @@
-
 export const Translations: Record<string, Record<string, string>> = {
-    PaymentMethod: { CASH: "gotówka", CASH_LATE: "gotówka terminowa", TRANSFER: "przelew" },
-    BedType: { SINGLE: "pojedyncze", DOUBLE: "podwójne" },
+    PaymentMethod: {CASH: "gotówka", CASH_LATE: "gotówka terminowa", TRANSFER: "przelew"},
+    BedType: {SINGLE: "pojedyncze", DOUBLE: "podwójne"},
     BedStatus: {
         AVAILABLE: "Dostępny",
         BOOKED: "Zarezerwowany",
@@ -15,6 +14,12 @@ export const Translations: Record<string, Record<string, string>> = {
         ADVANCE_PAID: "Wpłacony zadatek",
         FULLY_PAID: "Wpłacona całość",
         CANCELLED: "Anulowana"
+    },
+    PaymentStatus: {
+        PAID: "Zapłacona",
+        TO_PAY: "Do zapłaty",
+        OVER_DUE: "Przeterminowana",
+        ALL: "ALL"
     }
 };
 

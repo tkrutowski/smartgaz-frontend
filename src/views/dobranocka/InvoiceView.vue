@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {useCustomerStore} from "@/stores/customers.ts";
 import {useInvoiceStore} from "@/stores/invoices.ts";
+import {useReservationStore} from "@/stores/reservation.ts";
 import {useRoute} from "vue-router";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {type Invoice, type InvoiceItem, PaymentMethod, PaymentStatus} from "@/types/Invoice.ts";
@@ -16,9 +17,11 @@ import type {AxiosError} from "axios";
 import moment from "moment";
 import type {Customer} from "@/types/Customer.ts";
 import {RentService} from "@/service/RentService.ts";
+import type {ReservationBed} from "@/types/Room.ts";
 
 const customerStore = useCustomerStore();
 const invoiceStore = useInvoiceStore();
+const reservationStore = useReservationStore();
 const route = useRoute();
 
 const toast = useToast();
@@ -33,6 +36,7 @@ const invoice = ref<Invoice>({
   paymentDate: null,
   otherInfo: "",
   invoiceItems: [],
+  reservations:[]
 });
 
 const selectedPaymentMethod = ref<PaymentMethod>(PaymentMethod.TRANSFER);
@@ -60,7 +64,6 @@ const btnSaveDisabled = ref<boolean>(false);
 let editedInvoiceNumber: number = 0;
 
 watch(invoiceYear, async (newValue) => {
-  console.log('watch year', newValue)
   if (!isEdit.value)
     invoiceNumber.value = await invoiceStore.findInvoiceNumber(newValue);
 })
@@ -149,9 +152,11 @@ async function newInvoice() {
             detail: "Zapisano fakturę nr: " + invoice.value.number,
             life: 3000,
           });
+          reservationStore.selectedReservations = [];
           setTimeout(() => {
             router.push({name: "Invoices"});
           }, 3000);
+          reservationStore.refreshReservations();
         })
         .catch((reason: AxiosError) => {
           toast.add({
@@ -248,7 +253,15 @@ function newItem() {
   }
   invoice.value.invoiceItems.push({...invoiceItem.value})
 }
-
+const calculatePrice = ((item: ReservationBed, start:Date, end: Date) => {
+  if (item) {
+    const priceArray:[number, number] = RentService.calculateRentPeriodArray(start, end);
+    const perMonth: number = item.priceMonth * priceArray[0]
+    const perDay: number = item.priceDay * priceArray[1]
+    return perMonth + perDay
+  }
+  return 0
+});
 //
 //------------------------------------------------- EDIT INVOICE_ITEM---------------------------------------------------
 //
@@ -327,12 +340,31 @@ onMounted(async () => {
   // console.log("onMounted EDIT", route.params);
   btnSaveDisabled.value = true;
   isEdit.value = route.params.isEdit === "true";
+    const invoiceId = Number(route.params.invoiceId as string);
   if (!isEdit.value) {
     console.log("onMounted NEW INVOICE");
     invoiceYear.value = new Date(Date.now()).getFullYear();
+    if (invoiceId === -1){
+      invoice.value.customer = reservationStore.selectedReservations[0].customer
+      for (const selectedReservation of reservationStore.selectedReservations) {
+        invoiceItem.value.idInvoice = invoice.value.idInvoice;
+        invoiceItem.value.name = "Najem krótkotrwały pomieszczeń mieszkalnych, Siekierki Wielkie ul. Poznańska 32; Rez nr: "
+            + selectedReservation.number + "; " + moment(selectedReservation.startDate).format("YYYY-MM-DD")
+            + " - " + moment(selectedReservation.endDate).format("YYYY-MM-DD");
+        invoiceItem.value.amount = calculatePrice(selectedReservation.beds[0], selectedReservation.startDate!, selectedReservation.endDate!);
+        invoiceItem.value.unit = 'szt.'
+        invoiceItem.value.quantity = selectedReservation.beds.length;
+        invoiceItem.value.vat = {
+          viewValue: "8%",
+          numberValue: 8,
+          multiplier: 1.08
+        }
+        invoice.value.invoiceItems.push({...invoiceItem.value})
+        invoice.value.reservations.push(selectedReservation)
+      }
+    }
   } else {
     console.log("onMounted EDIT INVOICE");
-    const invoiceId = Number(route.params.invoiceId as string);
     invoiceStore
         .getInvoiceFromDb(invoiceId)
         .then((data) => {

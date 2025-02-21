@@ -15,6 +15,7 @@ export const useReservationStore = defineStore('reservation', {
         rowsPerPage: parseInt(localStorage.getItem("rowsPerPageReservation") || "10", 10),
         loadingReservation: false,
         reservations: [] as Reservation[],
+        selectedReservations: [] as Reservation[],
         beds: [] as Bed[]
     }),
 

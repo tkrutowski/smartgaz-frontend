@@ -37,6 +37,7 @@ const btnSaveDisabled = ref<boolean>(false);
 const btnShowBusy = ref<boolean>(false);
 const reservation = ref<Reservation>({
   id: 0,
+  invoiceId: 0,
   number: "",
   customer: null,
   startDate: null,
@@ -87,7 +88,7 @@ const findNewBeds = () => {
           showAddNewBedsDialog.value = true;
         }
       }).catch((reason: AxiosError) => {
-    console.log(reason);
+    console.error(reason);
     toast.add({
       severity: "error",
       summary: "Błąd podczas wyszukiwania łóżek.",
@@ -356,7 +357,7 @@ onMounted(async () => {
         <FloatLabel variant="in">
           <InputNumber v-model="reservation.deposit" inputId="deposit" mode="currency" currency="PLN" locale="pl-PL"
                        fluid @focus="UtilsService.selectText"/>
-          <label for="deposit" class="font-bold block mb-1 ml-1"> Depozyt (opcjonalnia) </label>
+          <label for="deposit" class="font-bold block mb-1 ml-1"> Kaucja (opcjonalnia) </label>
         </FloatLabel>
       </div>
 

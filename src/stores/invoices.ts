@@ -3,6 +3,7 @@ import httpCommon from "../config/http-common";
 import type {Invoice, Vat} from "../types/Invoice.ts";
 import {PaymentMethod, PaymentStatus} from "../types/Invoice.ts";
 import moment from "moment";
+import type {Reservation} from "@/types/Room.ts";
 
 export const useInvoiceStore = defineStore("invoice", {
     state: () => ({
@@ -36,11 +37,11 @@ export const useInvoiceStore = defineStore("invoice", {
         async getCustomerInvoices(customerId: number) {
             console.log("geCustomerInvoices() ", customerId);
             if (this.invoices.length === 0) {
-                console.log("Downloading Invoices...", this.invoices.length);
+                // console.log("Downloading Invoices...", this.invoices.length);
                 this.loadingWait = true;
                 await this.getInvoicesFromDb("ALL");
                 this.loadingWait = false;
-                console.log("Downloaded Invoices ", this.invoices.length);
+                // console.log("Downloaded Invoices ", this.invoices.length);
             }
             const result = this.invoices.filter(
                 (invoice) => invoice.customer?.id === customerId
@@ -60,7 +61,7 @@ export const useInvoiceStore = defineStore("invoice", {
                     "getInvoicesFromDb() - Ilosc faktur[]: " + response.data.length
                 );
                 this.invoices = response.data.map((invoice: any) => this.convertResponse(invoice));
-                console.log("getInvoicesFromDb()", this.invoices);
+                console.log("getInvoicesFromDb()", this.invoices.length);
             this.loadingInvoices = false;
             console.log("END - getInvoicesFromDb(" + paymentStatus + ")");
         },
@@ -68,7 +69,7 @@ export const useInvoiceStore = defineStore("invoice", {
         //
         //GET  INVOICE FROM DB BY ID
         //
-        async getInvoiceFromDb(invoiceId: number): Promise<Invoice | undefined> {
+        async getInvoiceFromDb(invoiceId: number): Promise<Invoice> {
             console.log("START - getInvoiceFromDb(" + invoiceId + ")");
             this.loadingInvoices = true;
             const response = await httpCommon.get(`/v1/dobranocka/invoice/` + invoiceId);
@@ -95,16 +96,17 @@ export const useInvoiceStore = defineStore("invoice", {
         //ADD INVOICE
         //
         async addInvoiceDb(invoice: Invoice) {
-            console.log("START - addInvoiceDb()", invoice);
-            const transformedInvoice = {
+            console.log("START - addInvoiceDb()", invoice.idInvoice);
+            const payload = {
                 ...invoice,
                 invoiceDate: invoice.invoiceDate ? moment(invoice.invoiceDate).format("YYYY-MM-DD") : null,
                 sellDate: invoice.sellDate ? moment(invoice.sellDate).format("YYYY-MM-DD") : null,
                 paymentDate: invoice.paymentDate ? moment(invoice.paymentDate).format("YYYY-MM-DD") : null,
+                reservationIds: invoice.reservations.map((reservation:Reservation) => reservation.id) || [],
             };
-            console.log("addInvoiceDb() trans", transformedInvoice);
+            // console.log("addInvoiceDb() trans", payload);
 
-            const response = await httpCommon.post(`/v1/dobranocka/invoice`, transformedInvoice);
+            const response = await httpCommon.post(`/v1/dobranocka/invoice`, payload);
             this.invoices.push(this.convertResponse(response.data));
             console.log("END - addInvoiceDb()");
         },
@@ -210,8 +212,6 @@ export const useInvoiceStore = defineStore("invoice", {
                 invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate) : null,
                 sellDate: invoice.sellDate ? new Date(invoice.sellDate) : null,
                 paymentDate: invoice.paymentDate ? new Date(invoice.paymentDate) : null,
-                // paymentMethod: PaymentMethod[invoice.paymentMethod as keyof typeof PaymentMethod] || invoice.paymentMethod,
-                // paymentStatus: PaymentStatus[invoice.paymentStatus as keyof typeof PaymentStatus] || invoice.paymentStatus,
             }
         }
     },

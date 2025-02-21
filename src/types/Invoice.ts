@@ -1,8 +1,10 @@
 import type {Customer} from "./Customer.ts";
+import type {Reservation} from "@/types/Room.ts";
 
 export interface Invoice {
   idInvoice: number;
   customer: Customer | null;
+  reservations: Reservation[];
   number: string;
   sellDate: Date | null;
   invoiceDate:  Date | null;

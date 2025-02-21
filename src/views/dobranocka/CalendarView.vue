@@ -181,9 +181,7 @@ const reservationInfo = ref<Reservation | undefined>(undefined);
 
 function displayInfo(bed: Bed, date: Date) {
   const reservation = getReservation(bed, date);
-  console.log("displayInfo", reservation);
   if (reservation) {
-    console.log("displayInfo IF", reservation);
     reservationInfo.value = reservation;
     showReservationInfoDialog.value = true;
   }

@@ -54,7 +54,7 @@ export const UtilsService = {
     },
 
     isPositiveFloat(value: string): boolean {
-        console.log('isPositiveFloat', value);
+        // console.log('isPositiveFloat', value);
         let str: string = String(value);
         str = str.trim();
         if (!str) {

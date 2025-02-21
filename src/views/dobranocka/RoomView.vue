@@ -109,7 +109,6 @@ async function newRoom() {
 // ---------------------------------------------------------NEW BED---------------------------------------
 //
 function newBed() {
-  console.log('new bed')
   bed.value.name = "nazwa";
   bed.value.type = BedType.SINGLE;
   bed.value.status = BedStatus.AVAILABLE;
@@ -182,7 +181,6 @@ const onCellEditComplete = (event: DataTableCellEditCompleteEvent) => {
 const showDeleteConfirmationDialog = ref<boolean>(false);
 const bedDeleteItemIndex = ref<number>(-1);
 const confirmDeleteItem = (item: Bed, index: number) => {
-  console.log("confirmDelete",item, index)
   bedToRemove.value = item;
   bedDeleteItemIndex.value = index;
   showDeleteConfirmationDialog.value = true;

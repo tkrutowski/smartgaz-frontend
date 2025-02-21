@@ -49,13 +49,8 @@ export const useUsersStore = defineStore('user', {
             else return null
         },
         getNotUserRoles(userRoles: Role[]) {
-            console.log('userRoles', userRoles)
+            // console.log('userRoles', userRoles)
             return this.getRolesAllFromDb().then((roles: Role[]) => {
-                console.log('Role1', roles)
-                console.log(
-                    'Role2',
-                    roles.filter((role) => !userRoles.some((userRole) => userRole.id === role.id)),
-                )
                 return roles.filter((role) => !userRoles.some((userRole) => userRole.id === role.id))
             })
         },

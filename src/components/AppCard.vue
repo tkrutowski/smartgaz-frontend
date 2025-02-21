@@ -19,7 +19,6 @@ defineProps({
   },
 })
 function clicked() {
-  console.log('clicked')
   emit('clicked')
 }
 </script>
