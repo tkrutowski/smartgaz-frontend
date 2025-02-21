@@ -286,7 +286,6 @@ const checkCustomers = computed(() => {
               <OfficeButton v-else class="" text="FV" btn-type="office-regular" icon="pi pi-plus" icon-pos="left"
                             :btn-disabled="reservationStore.selectedReservations.length === 0 || checkCustomers"/>
             </router-link>
-            {{ checkCustomers }}
           </div>
           <div class="flex gap-2">
             <IconField icon-position="left">
