@@ -10,7 +10,7 @@ export const useAuthorizationStore = defineStore('authorization', {
     state: () => ({
         accessToken: localStorage.getItem('accessToken') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
-        loginError: false,
+        loginError: null,
         btnDisabled: false,
         isAuthenticated: false,
         loading: false,
@@ -198,6 +198,13 @@ export const useAuthorizationStore = defineStore('authorization', {
 
     //actions = metody w komponentach
     actions: {
+        setLoginError(message: string) {
+            this.loginError = message;
+        },
+        clearLoginError() {
+            this.loginError = null;
+        },
+
         logUser(token: string, refreshToken: string) {
             console.log("logUser: accessToken: ",token, ", refresh token: ", refreshToken)
             this.accessToken = token
@@ -210,6 +217,7 @@ export const useAuthorizationStore = defineStore('authorization', {
             }
             this.refreshToken = refreshToken
             localStorage.setItem('refreshToken', refreshToken)
+            this.clearLoginError()
         },
         //
         //LOGIN
@@ -242,6 +250,7 @@ export const useAuthorizationStore = defineStore('authorization', {
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('username')
+            this.clearLoginError()
             this.$reset() //store reset
             customerStore.customers = []
             console.log('router',router)
