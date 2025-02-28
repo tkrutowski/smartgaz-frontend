@@ -420,7 +420,7 @@ const showErrorName = () => {
               text="zapisz"
               btn-type="office-save"
               type="submit"
-              :is-busy-icon="btnShowBusy"
+              :loading="btnShowBusy"
               :btn-disabled="isSaveBtnDisabled"
           />
         </div>

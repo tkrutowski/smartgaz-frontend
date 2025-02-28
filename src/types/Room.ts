@@ -38,7 +38,7 @@ export interface Reservation {
   id: number
   number: string
   customer: Customer | null
-  invoiceId: number;
+  invoiceId: number | null;
   beds: ReservationBed[]
   startDate: Date | null
   endDate: Date | null
@@ -49,7 +49,7 @@ export interface Reservation {
 }
 
 export interface ReservationBed {
-  id: number
+  id: number | null
   bed: Bed
   priceDay: number
   priceMonth: number

@@ -30,6 +30,10 @@ const props = defineProps({
     type: Array as PropType<ReservationBed[]>,
     required: true,
   },
+  hasInvoice: {
+    type: Boolean,
+    required: true,
+  },
 })
 const emit = defineEmits<{
   (e: 'save', checkin: Date, checkout: Date): void
@@ -48,6 +52,7 @@ const prevCheckin = ref<Date | null>(null)
 const checkout = ref<Date | null>(null)
 const prevCheckout = ref<Date | null>(null)
 const reservationId = ref<number>(0)
+const hasInvoice = ref<boolean>(false)
 const beds = ref<BedWithAvailability[]>([])
 const searching = ref<boolean>(false)
 const isSearchBtnDisabled = computed(() => {
@@ -68,7 +73,7 @@ watchEffect(() => {
   prevCheckout.value = new Date(props.checkout);
 
   reservationId.value = props.reservationId;
-
+  hasInvoice.value = props.hasInvoice;
   beds.value = props.beds?.map((resBed: ReservationBed) => ({
     ...resBed.bed,
     availability: "",
@@ -99,20 +104,31 @@ async function checkAvailable() {
 function reset(): void {
   beds.value.forEach(bed => bed.availability = "");
 }
+
+const minCheckoutDate = computed(() => {
+  return (hasInvoice.value  && checkout.value) ? checkout.value : undefined;
+});
 </script>
 
 <template>
-  <Dialog :style="{ width: '550px' }" header="Rezerwacja: zmiana daty" :modal="true">
-
+  <Dialog :style="{ width: '550px' }" :modal="true">
+    <template #header>
+      <div class="flex items-center justify-between w-full">
+        <span class="text-lg">Rezerwacja: zmiana daty</span>
+      </div>
+    </template>
+    <div v-if="hasInvoice" class="p-3 mb-4 bg-yellow-200 border border-red-500 text-red-700 rounded">
+      <strong>Uwaga!</strong> Dla tej rezerwacji wystawiono fakturę. Nie można zmienić daty na wcześniejszą.
+    </div>
     <Fieldset legend="Data rezerwacji">
       <div class="flex flex-row gap-4 mt-4 justify-center">
         <FloatLabel variant="on">
-          <DatePicker v-model="checkin" inputId="checkin" showIcon iconDisplay="input" date-format="yy-mm-dd"/>
+          <DatePicker v-model="checkin" inputId="checkin" showIcon iconDisplay="input" date-format="yy-mm-dd" :disabled="hasInvoice"/>
           <label for="checkin">Zameldowania</label>
         </FloatLabel>
         <FloatLabel variant="on">
           <DatePicker v-model="checkout" inputId="checkout" showIcon iconDisplay="input" date-format="yy-mm-dd"
-                      @date-select="reset"/>
+                      @date-select="reset" :min-date="minCheckoutDate"/>
           <label for="checkout">Wymeldowanie</label>
         </FloatLabel>
 

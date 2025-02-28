@@ -55,6 +55,16 @@ const isSaveBtnDisabled = computed(() => {
       btnSaveDisabled.value
   );
 });
+
+function submitSave() {
+  submitted.value = true;
+  if (isReservationExtended.value) {
+    saveReservation();
+  } else {
+    updateReservation();
+  }
+}
+
 //
 //------------------------------------------NEW BED----------------------------------------------
 //
@@ -117,7 +127,6 @@ const addNewBeds = () => {
 const submitted = ref(false);
 
 async function updateReservation() {
-  submitted.value = true;
   if (isNotValid()) {
     showError("Rezerwacja musi mieć łóżka");
   } else {
@@ -197,10 +206,19 @@ const submitDelete = async () => {
 //------------------------------------------EDIT RESERVATION DATES----------------------------------------------
 //
 const showEditReservationDatesDialog = ref<boolean>(false);
+const isReservationExtended = ref<boolean>(false);
 const submitDateChange = async (checkin: Date, checkout: Date) => {
   console.log("submitDateChange()", checkin, checkout);
-  reservation.value.startDate = checkin;
-  reservation.value.endDate = checkout;
+  if (reservation.value.invoiceId) {
+    isReservationExtended.value = true;
+    reservation.value.startDate = moment(reservation.value.endDate).toDate();
+    reservation.value.endDate = checkout;
+    reservation.value.advance = 0;
+    reservation.value.deposit = 0;
+  } else {
+    reservation.value.startDate = checkin;
+    reservation.value.endDate = checkout;
+  }
   toast.add({
     severity: "info",
     summary: "Potwierdzenie",
@@ -210,6 +228,93 @@ const submitDateChange = async (checkin: Date, checkout: Date) => {
 
   showEditReservationDatesDialog.value = false;
 };
+
+//-----------------------------------------------------NEW RESERVATION
+const calculateNetSum = (() => {
+  return reservation.value.beds.reduce((acc, bed) => acc + calculateNet(bed), 0);
+});
+const calculateNet = ((item: ReservationBed) => {
+  if (item) {
+    const perMonth: number = item.priceMonth * calculateRentPeriodArray.value[0]
+    const perDay: number = item.priceDay * calculateRentPeriodArray.value[1]
+    return perMonth + perDay
+  }
+  return 0
+});const calculateRentPeriodArray = computed(() => {
+  if (reservation.value.startDate != null && reservation.value.endDate != null) {
+    return RentService.calculateRentPeriodArray(reservation.value.startDate, reservation.value.endDate);
+  }
+  return [0, 0];
+});
+
+async function saveReservation() {
+  btnSaveDisabled.value = true;
+  btnShowBusy.value = true;
+  const newNumber = await reservationStore.findNewReservationNumber(moment().year());
+  const newReservation: Reservation = {
+    id: 0,
+    invoiceId: null,
+    number: moment().year() + "/" + newNumber,
+    customer: reservation.value.customer,
+    advance: reservation.value.advance,
+    startDate: reservation.value.startDate,
+    endDate: reservation.value.endDate,
+    deposit: reservation.value.deposit,
+    reservationStatus: reservation.value.advance === 0 ? ReservationStatus.NO_PAYMENT : (reservation.value.advance > 0 && reservation.value.advance < calculateNetSum()) ? ReservationStatus.ADVANCE_PAID : ReservationStatus.FULLY_PAID,
+    info: reservation.value.info,
+    beds: reservation.value.beds
+  }
+  newReservation.beds
+      .forEach((item: ReservationBed) => item.id = null)
+
+  reservationStore.addReservationDb(newReservation)
+      .then(() => {
+        const today = moment().startOf("day");
+        const startDate = moment(newReservation.startDate).startOf("day");
+        //update beds status if today
+        if (startDate.isSameOrBefore(today)) {
+          newReservation.beds.flatMap((resBed: ReservationBed) => resBed.bed).forEach((item: Bed) => {
+            item.status = BedStatus.OCCUPIED;
+            roomStore.updateBedDb(item).then(() => {
+              toast.add({
+                severity: "info",
+                summary: "Potwierdzenie",
+                detail: "Zmieniono status łóżka na 'Zajęte'.",
+                life: 3000,
+              });
+            }).catch((reason: AxiosError) => {
+              console.error(reason);
+              toast.add({
+                severity: "error",
+                summary: "Błąd podczas dodawania rezerwacji.",
+                detail: "Nie udało się zmienić statusu łóżka na 'Zajęte'",
+                life: 5000,
+              });
+            })
+          })
+        }
+        toast.add({
+          severity: "success",
+          summary: "Potwierdzenie",
+          detail: "Dodano rezerwację.",
+          life: 3000,
+        });
+        setTimeout(() => {
+          router.push({name: "Reservations"});
+        }, 3000);
+      }).catch((reason: AxiosError) => {
+    console.error(reason);
+    toast.add({
+      severity: "error",
+      summary: "Błąd podczas dodawania rezerwacji.",
+      detail: (reason?.response?.data as { message: string }).message,
+      life: 5000,
+    });
+    btnSaveDisabled.value = false
+  }).finally(() => {
+    btnShowBusy.value = false;
+  })
+}
 
 //--------------------------------------------------MOUNTED------------------------
 onMounted(async () => {
@@ -252,6 +357,7 @@ onMounted(async () => {
       :checkin="moment(reservation.startDate!).format('YYYY-MM-DD')"
       :checkout="moment(reservation.endDate!).format('YYYY-MM-DD')"
       :beds="reservation.beds"
+      :has-invoice="reservation.invoiceId != null"
       :reservation-id="reservation.id"
       @save="submitDateChange"
       @cancel="showEditReservationDatesDialog = false"
@@ -266,17 +372,23 @@ onMounted(async () => {
               @click="() => router.push({ name: 'Reservations' })"
           />
           <OfficeButton btn-type="office-regular" label="ŁÓŻKO" icon="pi pi-plus" icon-pos="left" @click="findNewBeds"
-                        :loading="reservationStore.loadingReservation"/>
+                        :loading="reservationStore.loadingReservation"
+                        :disabled="reservation.invoiceId != null && !isReservationExtended"/>
         </div>
-        <div  class="flex w-full gap-2 justify-center items-center order-1 md:order-2">
+        <div class="flex w-full gap-2 justify-center items-center order-1 md:order-2">
           <ProgressSpinner v-if="reservationStore.loadingReservation"
-              class=""
-              style="width: 35px; height: 35px"
-              stroke-width="5"
+                           class=""
+                           style="width: 35px; height: 35px"
+                           stroke-width="5"
           />
-          <p v-else class="text-lg md:text-2xl  ">Nr {{reservation.number }},
-            <span class="text-lg md:text-2xl text-primary "> {{ moment(reservation.startDate).format("DD-MM-YYYY") }} -
+          <div v-else>
+
+            <p class="text-lg md:text-2xl  "><span v-if="!isReservationExtended">Nr {{ reservation.number }}, </span>
+              <span class="text-lg md:text-2xl text-primary " :class="{'text-red-500 font-bold':isReservationExtended}"> {{
+                  moment(reservation.startDate).format("DD-MM-YYYY")
+                }} -
           {{ moment(reservation.endDate).format("DD-MM-YYYY") }}</span></p>
+          </div>
           <OfficeIconButton
               title="Zamień łóżko na inne"
               icon="pi pi-file-edit"
@@ -286,7 +398,14 @@ onMounted(async () => {
       </div>
     </template>
     <div class="flex flex-col w-full gap-3 justify-center items-center">
-
+      <div v-if="reservation.invoiceId" class="p-3 bg-yellow-200 border border-red-500 text-red-700 rounded">
+        <strong>Uwaga!</strong> Dla tej rezerwacji wystawiono fakturę. Niektóre pola są zablokowane.
+      </div>
+      <div v-if="reservation.invoiceId && isReservationExtended"
+           class="p-3 mb-4 bg-yellow-200 border border-red-500 text-red-700 rounded">
+        <strong>Uwaga!</strong> Przedłużenie rezerwacji spowoduje utworzenie nowej. Pole 'Zaliczka' i 'Kaucja' zostały
+        wyzerowane (uzupełnij wg potrzeby).
+      </div>
       <!-- ROW-1   CUSTOMER -->
       <FloatLabel variant="in">
         <Select
@@ -296,6 +415,7 @@ onMounted(async () => {
             option-label="name"
             required
             :loading="customerStore.loadingCustomer"
+            :disabled="reservation.invoiceId != null"
             class="min-w-60 w-full md:w-fit"
 
         />
@@ -328,13 +448,15 @@ onMounted(async () => {
 
             <FloatLabel variant="in">
               <InputNumber v-model="bed.priceDay" inputId="day" mode="currency" currency="PLN" locale="pl-PL"
-                           @focus="UtilsService.selectText" :min="0" fluid/>
+                           @focus="UtilsService.selectText" :min="0"
+                           :disabled="reservation.invoiceId != null && !isReservationExtended" fluid/>
               <label for="day" class="font-bold block mb-1 ml-1"> Cena/dzień </label>
             </FloatLabel>
 
             <FloatLabel variant="in">
               <InputNumber v-model="bed.priceMonth" inputId="month" mode="currency" currency="PLN" locale="pl-PL"
-                           fluid @focus="UtilsService.selectText" :min="0"/>
+                           fluid @focus="UtilsService.selectText" :min="0"
+                           :disabled="reservation.invoiceId != null && !isReservationExtended"/>
               <label for="month" class="font-bold block mb-1 ml-1"> Cena/miesiąc </label>
             </FloatLabel>
           </div>
@@ -343,6 +465,7 @@ onMounted(async () => {
                 title="Usuń łóżko z rezerwacji"
                 icon="pi pi-trash"
                 severity="danger"
+                :disabled="reservation.invoiceId != null && !isReservationExtended"
                 @click="confirmDeleteBed(bed.bed)"
             />
           </div>
@@ -360,7 +483,10 @@ onMounted(async () => {
           <label for="deposit" class="font-bold block mb-1 ml-1"> Kaucja (opcjonalnia) </label>
         </FloatLabel>
       </div>
-
+      <div class="flex flex-col w-full md:w-1/3 mt-3">
+        <label class="ml-2 text-sm" for="input">Dodatkowe informacje:</label>
+        <Textarea v-model="reservation.info" rows="4" cols="30" fluid/>
+      </div>
     </div>
 
     <template #footer>
@@ -369,9 +495,9 @@ onMounted(async () => {
             text="zapisz"
             btn-type="office-save"
             type="submit"
-            :is-busy-icon="btnShowBusy"
+            :loading="btnShowBusy"
             :btn-disabled="isSaveBtnDisabled"
-            @click="updateReservation"
+            @click="submitSave"
         />
       </div>
     </template>

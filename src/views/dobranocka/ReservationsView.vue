@@ -324,7 +324,7 @@ const checkCustomers = computed(() => {
         <template #body="{ data }">
           <Checkbox v-model="reservationStore.selectedReservations"
                     :value="data"
-                    :disabled="data.invoiceId !== 0"
+                    :disabled="data.invoiceId !== null"
           />
         </template>
       </Column>

@@ -146,7 +146,7 @@ async function saveReservation() {
   const newNumber = await reservationStore.findNewReservationNumber(moment().year());
   const reservation: Reservation = {
     id: 0,
-    invoiceId: 0,
+    invoiceId: null,
     number: moment().year() + "/" + newNumber,
     customer: selectedCustomer.value,
     advance: advance.value,

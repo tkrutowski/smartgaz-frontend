@@ -30,7 +30,7 @@ watch(
     () => props.reservation,
     (newValue) => {
       reservation.value = newValue
-      if (reservation.value?.invoiceId > 0){
+      if (reservation.value?.invoiceId && reservation.value?.invoiceId > 0){
       invoiceStore.getInvoiceFromDb(reservation.value.invoiceId)
           .then((inv: Invoice) => {
             invoice.value = inv;
@@ -85,7 +85,7 @@ const calculateNetSum = (() => {
     </Fieldset>
     <Fieldset legend="Rezerwacja">
         <p class="text-sm">Data pobytu:<span class="ml-2 font-semibold">{{ reservation.startDate}} - {{ reservation.endDate }}</span></p>
-      <div class="flex flex-col gap-2 justify-center" v-for="bed in reservation.beds" :key="bed.id">
+      <div class="flex flex-col gap-2 justify-center" v-for="bed in reservation.beds" :key="bed.bed.id">
         <p class="text-sm">Miejsce:<span class="ml-2 font-semibold">{{roomStore.getRoomByBed(bed.bed.id)?.name}} / {{bed.bed.name}}</span></p>
       </div>
     </Fieldset>
