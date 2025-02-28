@@ -32,8 +32,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
-let refreshing = false
-
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {

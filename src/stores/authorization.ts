@@ -10,7 +10,7 @@ export const useAuthorizationStore = defineStore('authorization', {
     state: () => ({
         accessToken: localStorage.getItem('accessToken') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
-        loginError: null,
+        loginError:  null as string | null,
         btnDisabled: false,
         isAuthenticated: false,
         loading: false,
@@ -237,7 +237,7 @@ export const useAuthorizationStore = defineStore('authorization', {
 
             this.loading = false
             this.btnDisabled = false
-            this.loginError = false
+            this.clearLoginError()
             console.log('END - login()')
             return true
         },
