@@ -688,9 +688,9 @@ const getCustomerLabel = (option: Customer) =>{
               <!-- AMOUNT NET-->
               <Column field="amount" header="Cena netto"
                       class="min-w-16 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
-                <template #body="{ data, field }">
+                <template #body="{ data }">
                   <div style="text-align: center">
-                    {{ UtilsService.formatCurrency(data[field]) }}
+                    {{ UtilsService.formatCurrency(data.amount) }}
                   </div>
                 </template>
                 <template #editor="{ data, field }">
@@ -700,12 +700,9 @@ const getCustomerLabel = (option: Customer) =>{
 
               <!-- TOTAL AMOUNT NETT-->
               <Column field="amount" header="Wartość netto" class="min-w-16">
-                <template #body="slotProps">
+                <template #body="{ data }">
                   {{
-                    UtilsService.formatCurrency(
-                        slotProps.data[slotProps.field] *
-                        slotProps.data["quantity"]
-                    )
+                    UtilsService.formatCurrency(data.amount * data["quantity"])
                   }}
                 </template>
               </Column>
@@ -716,7 +713,7 @@ const getCustomerLabel = (option: Customer) =>{
                   {{ data[field].viewValue }}
                 </template>
                 <template #editor="{ data, field }">
-                  <Select v-model="data[field]" :options="invoiceStore.vatTypes" option-label="viewValue"
+                  <Select v-model="data.vat" :options="invoiceStore.vatTypes" option-label="viewValue"
                           placeholder="Wybierz..." fluid/>
                 </template>
               </Column>

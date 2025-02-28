@@ -374,8 +374,8 @@ const getCustomerLabel = (customer:Customer) =>{
         <template #body="{ data, field }">
           <StatusButton
               title="Zmień status faktury (Zapłacona/Do zapłaty)"
-              :btn-type="data[field]"
-              :color-icon="data[field] === 'PAID' ? '#2da687' : '#dc3545'"
+              :btn-type="data.paymentStatus"
+              :color-icon="data.paymentStatus === 'PAID' ? '#2da687' : '#dc3545'"
               @click="confirmStatusChange(data)"
           />
         </template>
@@ -418,12 +418,12 @@ const getCustomerLabel = (customer:Customer) =>{
                 <div class="w-full" style="text-align: left">Nazwa</div>
               </template>
               <template #body="{ data, field }">
-                <div style="text-align: left">{{ data[field] }}</div>
+                <div style="text-align: left">{{ data.name }}</div>
               </template>
             </Column>
             <Column field="unit" header="Jm">
               <template #body="{ data, field }">
-                <div style="text-align: center">{{ data[field] }}</div>
+                <div style="text-align: center">{{ data.unit }}</div>
               </template>
             </Column>
             <Column field="quantity" header="Ilość"></Column>
@@ -436,7 +436,7 @@ const getCustomerLabel = (customer:Customer) =>{
               <template #body="slotProps">
                 {{
                   UtilsService.formatCurrency(
-                      slotProps.data[slotProps.field] *
+                      slotProps.data.amount *
                       slotProps.data["quantity"]
                   )
                 }}
@@ -445,7 +445,7 @@ const getCustomerLabel = (customer:Customer) =>{
             <!-- VAT -->
             <Column field="vat" header="VAT" >
               <template #body="{ data, field }">
-                {{ data[field].viewValue }}
+                {{ data.vat.viewValue }}
               </template>
             </Column>
             <!--AMOUNT VAT -->

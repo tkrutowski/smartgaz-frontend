@@ -225,10 +225,10 @@ function getRoomShortName(roomName: string | undefined) {
         <template #header>
           <OfficeIconButton icon="pi pi-home" @click="scrollToToday()"/>
         </template>
-        <template #body="{data, field}">
+        <template #body="{data}">
           <p class="h-full py-3 pr-2 text-nowrap"
              :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), .3)}`">
-            {{ getRoomShortName(roomStore.getRoomByBed(data.id)?.name) }} / {{ data[field] }}
+            {{ getRoomShortName(roomStore.getRoomByBed(data.id)?.name) }} / {{ data.name }}
           </p>
         </template>
       </Column>
