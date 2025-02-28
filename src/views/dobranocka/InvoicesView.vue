@@ -371,7 +371,7 @@ const getCustomerLabel = (customer:Customer) =>{
       </Column>
 
       <Column field="paymentStatus" header="Status" style="width: 100px">
-        <template #body="{ data, field }">
+        <template #body="{ data }">
           <StatusButton
               title="Zmień status faktury (Zapłacona/Do zapłaty)"
               :btn-type="data.paymentStatus"
@@ -417,12 +417,12 @@ const getCustomerLabel = (customer:Customer) =>{
               <template #header>
                 <div class="w-full" style="text-align: left">Nazwa</div>
               </template>
-              <template #body="{ data, field }">
+              <template #body="{ data }">
                 <div style="text-align: left">{{ data.name }}</div>
               </template>
             </Column>
             <Column field="unit" header="Jm">
-              <template #body="{ data, field }">
+              <template #body="{ data }">
                 <div style="text-align: center">{{ data.unit }}</div>
               </template>
             </Column>
@@ -444,7 +444,7 @@ const getCustomerLabel = (customer:Customer) =>{
             </Column>
             <!-- VAT -->
             <Column field="vat" header="VAT" >
-              <template #body="{ data, field }">
+              <template #body="{ data }">
                 {{ data.vat.viewValue }}
               </template>
             </Column>

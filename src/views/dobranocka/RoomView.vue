@@ -14,7 +14,7 @@ import {UtilsService} from "@/service/UtilsService.ts";
 import type {DataTableCellEditCompleteEvent} from "primevue/datatable";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {RentService} from "@/service/RentService.ts";
-import {TranslationService} from "../../service/TranslationService.ts";
+import {TranslationService} from "@/service/TranslationService.ts";
 
 const roomStore = useRoomStore();
 const route = useRoute();
@@ -333,8 +333,8 @@ const showErrorName = () => {
             <!-- BED TYPE -->
             <Column field="type" header="Rodzaj"
                     class="hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
-              <template #body="{ data, field }">
-                {{ TranslationService.translateEnum("BedType", data[field]) }}
+              <template #body="{ data }">
+                {{ TranslationService.translateEnum("BedType", data.type) }}
               </template>
               <template #editor="{ data, field }">
                 <Select v-model="data[field]" :options="RentService.getBedTypeOption()"
@@ -348,9 +348,9 @@ const showErrorName = () => {
             <!-- AMOUNT DAY-->
             <Column field="priceDay" header="Cena/dzień"
                     class="min-w-16 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
-              <template #body="{ data, field }">
+              <template #body="{ data }">
                 <div style="text-align: center">
-                  {{ UtilsService.formatCurrency(data[field]) }}
+                  {{ UtilsService.formatCurrency(data.priceDay) }}
                 </div>
               </template>
               <template #editor="{ data, field }">
@@ -361,9 +361,9 @@ const showErrorName = () => {
             <!-- AMOUNT MONTH-->
             <Column field="priceMonth" header="Cena/mc"
                     class="min-w-16 hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
-              <template #body="{ data, field }">
+              <template #body="{ data }">
                 <div style="text-align: center">
-                  {{ UtilsService.formatCurrency(data[field]) }}
+                  {{ UtilsService.formatCurrency(data.priceMonth) }}
                 </div>
               </template>
               <template #editor="{ data, field }">
@@ -374,8 +374,8 @@ const showErrorName = () => {
             <!-- BED STATUS -->
             <Column field="status" header="Stan"
                     class="hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
-              <template #body="{ data, field }">
-                {{ TranslationService.translateEnum("BedStatus", data[field]) }}
+              <template #body="{ data }">
+                {{ TranslationService.translateEnum("BedStatus", data.status) }}
               </template>
               <template #editor="{ data, field }">
                 <Select v-model="data[field]" :options="  RentService.getBedStatusOption()"

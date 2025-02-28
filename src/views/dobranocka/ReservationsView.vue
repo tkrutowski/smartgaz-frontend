@@ -382,8 +382,8 @@ const checkCustomers = computed(() => {
 
       <!--      ADVANCE-->
       <Column field="advance" header="Zaliczka" style="min-width: 120px" dataType="numeric">
-        <template #body="{data, field}">
-          {{ UtilsService.formatCurrency(data[field]) }}
+        <template #body="{ data }">
+          {{ UtilsService.formatCurrency(data.advance) }}
         </template>
         <template #filter="{ filterModel }">
           <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL"/>
@@ -392,8 +392,8 @@ const checkCustomers = computed(() => {
 
       <!--      DEPOSIT-->
       <Column field="deposit" header="Kaucja" style="min-width: 120px" dataType="numeric">
-        <template #body="{data, field}">
-          {{ UtilsService.formatCurrency(data[field]) }}
+        <template #body="{data}">
+          {{ UtilsService.formatCurrency(data.deposit) }}
         </template>
         <template #filter="{ filterModel }">
           <InputNumber v-model="filterModel.value" mode="currency" currency="PLN" locale="pl-PL"/>

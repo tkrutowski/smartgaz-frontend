@@ -709,10 +709,10 @@ const getCustomerLabel = (option: Customer) =>{
 
               <!-- VAT -->
               <Column field="vat" header="VAT" class="hover:cursor-pointer dark:hover:bg-green-950 hover:bg-green-100">
-                <template #body="{ data, field }">
-                  {{ data[field].viewValue }}
+                <template #body="{ data }">
+                  {{ data.vat.viewValue }}
                 </template>
-                <template #editor="{ data, field }">
+                <template #editor="{ data }">
                   <Select v-model="data.vat" :options="invoiceStore.vatTypes" option-label="viewValue"
                           placeholder="Wybierz..." fluid/>
                 </template>
