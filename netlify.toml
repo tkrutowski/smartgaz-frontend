@@ -1,3 +1,0 @@
-[build]
-  command = "npm ci && npm run build"
-  environment = { NODE_VERSION = "18", NPM_VERSION = "9", TYPESCRIPT_VERSION = "5.6.2" }
