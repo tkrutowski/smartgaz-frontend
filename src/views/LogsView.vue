@@ -184,8 +184,8 @@ onMounted(() => {
           filter-field="level"
           :show-filter-match-modes="false"
       >
-        <template #body="{ data }">
-          {{ data.level }}
+        <template #body="{ data, field }">
+          {{ data[field] }}
         </template>
         <template #filter="{ filterModel }">
           <Select
