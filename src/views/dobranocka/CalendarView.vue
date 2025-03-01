@@ -150,11 +150,24 @@ const todayIndex = ref<number>(0);
 const scrollToToday = () => {
   if (dataTableRef.value) {
     const columns = (dataTableRef.value as any).$el.querySelectorAll(".p-datatable-tbody > tr:first-child > td ");
-    if (columns[todayIndex.value]) {
-      columns[todayIndex.value].scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
+    if (columns[todayIndex.value -1 ]) { //-1 żeby było bardziej widoczne
+      columns[todayIndex.value -1].scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
     }
   }
 };
+
+function isContinuation(bed: Bed, date: Date): string {
+  const currentReservation = getReservation(bed, date);
+  if (!currentReservation) {
+    return "";
+  }
+  const found = reservationStore.reservations.some(prevReservation =>
+          prevReservation.customer?.id === currentReservation.customer?.id &&
+          prevReservation.beds.length === currentReservation.beds.length &&
+          moment(currentReservation.startDate).isSame(prevReservation.endDate)
+  )
+  return found ? " - kontynuacja" : ""
+}
 
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
@@ -245,14 +258,18 @@ function getRoomShortName(roomName: string | undefined) {
             <div class="w-full h-full py-3 "
                  :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), getBodyOpacity(day))}`">
 
-              <p class="relative" :class="{'bg-red-600 hover:cursor-pointer': isBedReserved(data, day),
-                            'cut-end': isLastReservedDay(data, day), 'cut-start': isFirstReservedDay(data, day)}"
-                 @click="displayInfo(data, day)">&emsp;
+              <p class="relative" :class="{
+                'bg-red-600 hover:cursor-pointer': isBedReserved(data, day),
+                'cut-end': isLastReservedDay(data, day) && !isFirstReservedDay(data, day),
+                'cut-start': isFirstReservedDay(data, day) && !isLastReservedDay(data, day),
+                'cut-both': isFirstReservedDay(data, day) && isLastReservedDay(data, day)
+                }"
+                @click="displayInfo(data, day)">&emsp;
                 <span v-if="isSecondReservedDay(data, day)"
                       class="absolute left-0 top-0 z-[6] text-white whitespace-nowrap text-center "
                       @click="displayInfo(data, day)"
                       :style="{ width: getReservationLength(data, day) * 50 + 'px' }"
-                >{{ getReservation(data, day)?.customer?.name }}</span></p>
+                >{{ getReservation(data, day)?.customer?.name }} {{isContinuation(data, day)}}</span></p>
             </div>
           </template>
         </Column>
@@ -267,10 +284,43 @@ function getRoomShortName(roomName: string | undefined) {
 }
 
 .cut-end {
-  clip-path: polygon(0 0, 100% 0, 50% 100%, 0 100%);
+  /*clip-path: polygon(0 0, 100% 0, 50% 100%, 0 100%);*/
+  clip-path: polygon(0 0, 50% 0, 100% 50%, 50% 100%, 0 100%);
 }
 
 .cut-start {
-  clip-path: polygon(50% 0, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%, 0 50%);
+  /*clip-path: polygon(50% 0, 100% 0, 100% 100%, 0 100%);*/
 }
+
+.cut-both {
+  /*clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 50% 50%, 0 100%);*/
+  clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 50% 50%, 0 100%);
+}
+/*
+.cut-both {
+  position: relative;
+}
+
+.cut-both::before,
+.cut-both::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+}
+
+.cut-both::before {
+  background-color: rgb(220 38 38) ;  Lewy trójkąt
+  clip-path: polygon(0 0, 50% 50%, 0 100%);
+  left: 0;
+}
+
+.cut-both::after {
+  background-color: blue;  Prawy trójkąt
+  clip-path: polygon(100% 0, 50% 50%, 100% 100%);
+  right: 0;
+}
+*/
 </style>
