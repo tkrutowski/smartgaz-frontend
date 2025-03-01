@@ -78,7 +78,9 @@ const editRoom = () => {
             </svg>
 
             <span class="text-xl">{{ bed.name }}</span>
-            <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)" :value="TranslationService.translateEnum('BedStatus', bed.status)" ></Tag>
+            <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)" >
+              {{TranslationService.translateEnum("BedStatus", bed.status.toString())}} {{RentService.getBedReservationEndDate(bed)}} {{RentService.getNextBedReservationStartDate(bed)}}
+            </Tag>
           </div>
           <div class="flex gap-4">
             <span class="text-sm">Cena/dzień:  <span
