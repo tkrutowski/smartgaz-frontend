@@ -110,6 +110,16 @@ const items = ref([
           router.push({name: "Company"});
         },
       },
+      {
+        separator: true
+      },
+      {
+        label: "Bank",
+        icon: "pi pi-fw pi-building-columns",
+        command: () => {
+          window.open("https://ingbusiness.pl/gib/login", "_blank");
+        }
+      },
     ],
   },
   {
