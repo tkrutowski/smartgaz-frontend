@@ -268,7 +268,7 @@ function getRoomShortName(roomName: string | undefined) {
                 <span v-if="isSecondReservedDay(data, day)"
                       class="absolute left-0 top-0 z-[6] text-white whitespace-nowrap text-center "
                       @click="displayInfo(data, day)"
-                      :style="{ width: getReservationLength(data, day) * 50 + 'px' }"
+                      :style="{ width: getReservationLength(data, day) * 70 + 'px' }"
                 >{{ getReservation(data, day)?.customer?.name }} {{isContinuation(data, day)}}</span></p>
             </div>
           </template>
