@@ -206,7 +206,7 @@ export const useAuthorizationStore = defineStore('authorization', {
         },
 
         logUser(token: string, refreshToken: string) {
-            console.log("logUser: accessToken: ",token, ", refresh token: ", refreshToken)
+            // console.log("logUser: accessToken: ",token, ", refresh token: ", refreshToken)
             this.accessToken = token
             localStorage.setItem('accessToken', token)
             this.isAuthenticated = true

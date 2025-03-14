@@ -124,7 +124,10 @@ function findAvailable() {
             life: 5000,
           });
         } else {
+          availableBeds.value.clear();
           rooms.sort((a, b) => a.name.localeCompare(b.name)).forEach((room: Room) => availableBeds.value.set(room.name, room.beds));
+          fetchEndDateIcons()
+          fetchStartDateIcons()
         }
       }).catch((reason: AxiosError) => {
     toast.add({
@@ -135,6 +138,44 @@ function findAvailable() {
     });
   })
 }
+
+// display icon if prev res endDate = this res startDate
+const endDateIcons = ref<Map<number, boolean>>(new Map<number, boolean>());
+const fetchEndDateIcons = async () => {
+  const bedList = Array.from(availableBeds.value.values()).flat();
+
+  const results = await Promise.all(
+      bedList.map(async (bed: Bed) => ({
+        id: bed.id,
+        value: await reservationStore.isEndDateReservation(bed.id, checkin.value!),
+      }))
+  );
+  results.forEach(({ id, value }) => {
+    endDateIcons.value.set(id, value);
+  });
+};
+const checkEndDate = computed(() => (bed: Bed) => {
+  return endDateIcons.value.get(bed.id) ?? false;
+});
+
+// display icon if next res startDate = this res endtDate
+const startDateIcons = ref<Map<number, boolean>>(new Map<number, boolean>());
+const fetchStartDateIcons = async () => {
+  const bedList = Array.from(availableBeds.value.values()).flat();
+
+  const results = await Promise.all(
+      bedList.map(async (bed) => ({
+        id: bed.id,
+        value: await reservationStore.isStartDateReservation(bed.id, checkout.value!),
+      }))
+  );
+  results.forEach(({ id, value }) => {
+    startDateIcons.value.set(id, value);
+  });
+};
+const checkStartDate = computed(() => (bed: Bed) => {
+  return startDateIcons.value.get(bed.id) ?? false;
+});
 
 //
 // SAVE
@@ -376,8 +417,13 @@ watch(checkout, (_, oldVal) => {
                   </svg>
 
                   <span class="text-xl">{{ bed.name }}</span>
-                  <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)"
-                       :value="TranslationService.translateEnum('BedStatus', bed.status)"></Tag>
+                  <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)">
+                    <div class="flex gap-2 items-center">
+                      <span :class="{ 'pi pi-exclamation-circle' :checkEndDate(bed)}" title="Inna rezerwacja kończy się tego dnia."/>
+                      <span>{{TranslationService.translateEnum('BedStatus', bed.status)}}</span>
+                      <span :class="{ 'pi pi-exclamation-circle' :checkStartDate(bed)}" title="Inna rezerwacja zaczyna się tego dnia."/>
+                    </div>
+                  </Tag>
                 </div>
               </div>
             </div>

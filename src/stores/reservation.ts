@@ -94,6 +94,26 @@ export const useReservationStore = defineStore('reservation', {
         },
 
         //
+        // CHECK IF RESERVATION ENDS THAT DAY FOR THAT BED
+        //
+        async isEndDateReservation(idBed:number, endDate: Date):Promise<boolean> {
+            console.log('START - isEndDateReservation()', idBed, endDate)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/check-end?bed=${idBed}&date=${endDate.toLocaleDateString()}`)
+            console.log('END - isEndDateReservation()', response)
+            return response.data;
+        },
+
+        //
+        // CHECK IF RESERVATION ENDS THAT DAY FOR THAT BED
+        //
+        async isStartDateReservation(idBed:number, startDate: Date):Promise<boolean> {
+            console.log('START - isStartDateReservation()', idBed, startDate)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/check-start?bed=${idBed}&date=${startDate.toLocaleDateString()}`)
+            console.log('END - isStartDateReservation()', response)
+            return response.data;
+        },
+
+        //
         //GET RESERVATIONS FROM DB
         //
         async getReservationsFromDb(): Promise<Reservation[]> {

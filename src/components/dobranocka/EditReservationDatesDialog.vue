@@ -11,6 +11,7 @@ const reservationStore = useReservationStore();
 
 interface BedWithAvailability extends Bed {
   availability: string;
+  overlapping: boolean;
 }
 
 const props = defineProps({
@@ -77,6 +78,7 @@ watchEffect(() => {
   beds.value = props.beds?.map((resBed: ReservationBed) => ({
     ...resBed.bed,
     availability: "",
+    overlapping: false
   })) ?? [];
 });
 
@@ -93,7 +95,10 @@ async function checkAvailable() {
         bed.id,
         reservationId.value
     );
+    const overlappingCheck = await reservationStore.isStartDateReservation(bed.id, checkout.value!);
+    console.log("overlappingCheck",overlappingCheck)
     bed.availability = result ? "available" : "unavailable";
+    bed.overlapping = overlappingCheck;
   });
 
   await Promise.all(promises); // Czekamy, aż wszystkie się zakończą
@@ -133,7 +138,7 @@ const minCheckoutDate = computed(() => {
         </FloatLabel>
 
         <OfficeButton btn-type="office-regular" type="button"
-                      title="Zmień datę i sprawdz dostępność"
+                      title="Sprawdz dostępność"
                       :btn-disabled="!isSearchBtnDisabled"
                       icon="pi pi-search"
                       :loading="searching"
@@ -168,8 +173,12 @@ const minCheckoutDate = computed(() => {
         </div>
         <Tag v-if="bed.availability === 'checking'" class="mt-2 mb-6 ml-4 text-lg" severity="warning"
              value="..."></Tag>
-        <Tag v-else-if="bed.availability === 'available'" class="mt-2 mb-6 ml-4 text-lg" severity="success"
-             value="Dostępne"></Tag>
+        <Tag v-else-if="bed.availability === 'available'" class="mt-2 mb-6 ml-4 text-lg" severity="success">
+          <div class="flex gap-2 items-center">
+            <span>Dostępne</span>
+            <span class="pt-0.5" :class="{ 'pi pi-exclamation-circle' :bed.overlapping}" title="Inna rezerwacja zaczyna się tego dnia."/>
+          </div>
+        </Tag>
         <Tag v-else-if="bed.availability === 'unavailable'" class="mt-2 mb-6 ml-4 text-lg" severity="error"
              value="Niedostępne"></Tag>
       </div>

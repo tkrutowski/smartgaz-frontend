@@ -504,18 +504,12 @@ const getCustomerLabel = (option: Customer) =>{
                     :invalid="showErrorCustomer()"
                     :options="customerStore.customers"
                     :option-label="getCustomerLabel"
+                    :loading="customerStore.loadingCustomer"
                     required
                 />
                 <small class="text-red-500">{{
                     showErrorCustomer() ? "Pole jest wymagane." : "&nbsp;"
                   }}</small>
-              </div>
-              <div v-if="customerStore.loadingCustomer" class="mt-5">
-                <ProgressSpinner
-                    class=""
-                    style="width: 35px; height: 35px"
-                    stroke-width="5"
-                />
               </div>
             </div>
 
@@ -537,7 +531,7 @@ const getCustomerLabel = (option: Customer) =>{
                 </div>
                 <div v-if="invoiceStore.loadingInvoiceNo" class="mt-6">
                   <ProgressSpinner
-                      class="ml-2 mt-1"
+                      class="mt-1"
                       style="width: 30px; height: 30px"
                       stroke-width="5"
                   />
@@ -614,14 +608,8 @@ const getCustomerLabel = (option: Customer) =>{
                       :options="RentService.getPaymentMethodsOption()"
                       option-label="label"
                       option-value="value"
+                      :loading="invoiceStore.loadingPaymentType"
                       required
-                  />
-                </div>
-                <div v-if="invoiceStore.loadingPaymentType" class="mt-6">
-                  <ProgressSpinner
-                      class="ml-2 mt-1"
-                      style="width: 30px; height: 30px"
-                      stroke-width="5"
                   />
                 </div>
               </div>

@@ -18,9 +18,7 @@
     "primevue": "^4.2.5",
     "tailwindcss-primeui": "^0.3.4",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "typescript": "5.6.2",
-    "vue-tsc": "2.1.10"
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.2.4",
