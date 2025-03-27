@@ -9,7 +9,12 @@ import type {Bed, Reservation, ReservationBed} from "@/types/Room.ts";
 import {UtilsService} from "@/service/UtilsService.ts";
 import ReservationInfoDialog from "@/components/dobranocka/ReservationInfoDialog.vue";
 import OfficeIconButton from "@/components/OfficeIconButton.vue";
+import ExtendReservationsByEndDateDialog from "@/components/dobranocka/ExtendReservationsByEndDateDialog.vue";
+import {useToast} from "primevue/usetoast";
+import router from "@/router";
+import type {MenuItem} from "primevue/menuitem";
 
+const toast = useToast();
 const reservationStore = useReservationStore();
 const roomStore = useRoomStore();
 moment.locale("pl"); // Ustawienie lokalizacji na język polski
@@ -150,8 +155,8 @@ const todayIndex = ref<number>(0);
 const scrollToToday = () => {
   if (dataTableRef.value) {
     const columns = (dataTableRef.value as any).$el.querySelectorAll(".p-datatable-tbody > tr:first-child > td ");
-    if (columns[todayIndex.value -1 ]) { //-1 żeby było bardziej widoczne
-      columns[todayIndex.value -1].scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
+    if (columns[todayIndex.value - 1]) { //-1 żeby było bardziej widoczne
+      columns[todayIndex.value - 1].scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
     }
   }
 };
@@ -162,9 +167,9 @@ function isContinuation(bed: Bed, date: Date): string {
     return "";
   }
   const found = reservationStore.reservations.some(prevReservation =>
-          prevReservation.customer?.id === currentReservation.customer?.id &&
-          prevReservation.beds.length === currentReservation.beds.length &&
-          moment(currentReservation.startDate).isSame(prevReservation.endDate)
+      prevReservation.customer?.id === currentReservation.customer?.id &&
+      prevReservation.beds.length === currentReservation.beds.length &&
+      moment(currentReservation.startDate).isSame(prevReservation.endDate)
   )
   return found ? " - kontynuacja" : ""
 }
@@ -206,6 +211,134 @@ function getRoomShortName(roomName: string | undefined) {
     return index !== -1 ? roomName.substring(0, index).trim() : roomName.trim();
   }
 }
+
+// selected rows
+const showExtendReservationsDialog = ref<boolean>(false);
+const selectedReservations = ref<Reservation[]>([]);
+
+//---------------------------------------------------MENU------------------------------------
+const menuRef = ref();
+const menuItems = computed(() => {
+  const reservationItems: MenuItem[] = [];
+  if (selectedReservation.value && selectedReservations.value.some(r => r.id === selectedReservation.value?.id)) {
+    reservationItems.push({
+      label: 'Odznacz rezerwacje',
+      icon: 'pi pi-stop',
+      disabled: !selectedReservation.value,
+      command: () => selectedReservations.value = selectedReservations.value.filter(
+          (r) => r.id !== selectedReservation.value?.id
+      ),
+    });
+  } else {
+    reservationItems.push({
+      label: 'Zaznacz rezerwacje',
+      icon: 'pi pi-check-square',
+      disabled: selectedReservation.value == null,
+      command: () => selectedReservations.value.push(selectedReservation.value!),
+    });
+  }
+  reservationItems.push({
+    separator: true
+  });
+  reservationItems.push({
+    label: 'Przedłuż',
+    icon: 'pi pi-sign-in',
+    disabled: selectedReservations.value.length === 0 && selectedReservation.value === null,
+    command: () => {
+      if (selectedReservations.value.length === 0 && selectedReservation.value !== null) {
+        selectedReservations.value.push(selectedReservation.value);
+      }
+      showExtendReservationsDialog.value = true
+    },
+  });
+  reservationItems.push({
+    label: 'Wystaw fakturę',
+    icon: 'pi pi-dollar',
+    disabled: (selectedReservation.value !== null && selectedReservation.value.invoiceId !== null),
+  });
+  reservationItems.push({
+    label: 'Zmień status',
+    icon: 'pi pi-th-large',
+    items: [
+      {
+        label: 'Do sprzątania',
+        disabled: true
+
+      },
+      {
+        label: 'Posprzątany',
+        disabled: true
+      },
+      {
+        label: 'Niedostępny',
+        disabled: true
+      }
+    ],
+  });
+  reservationItems.push({
+    separator: true
+  });
+
+  return reservationItems
+});
+const selectedReservation = ref<Reservation | null>(null)
+
+function onRightClick(event: Event, bed: Bed, date: Date) {
+  const reservation = getReservation(bed, date);
+  if (reservation) {
+    selectedReservation.value = reservation;
+  }
+  menuRef.value.show(event)
+}
+
+function isReservationSelected(bedToCheck: Bed, date: Date): boolean {
+  const reservation = getReservation(bedToCheck, date);
+  if (reservation) {
+    return (selectedReservations.value.some(r => r.id === reservation.id) || (selectedReservation.value !== null  && selectedReservation.value.id === reservation.id))
+  } else {
+    return false;
+  }
+}
+
+//-----------------------------------------EXTEND RESERVATION
+const submitExtend = async (checkout: Date) => {
+  for (const reservation of selectedReservations.value) {
+    if (reservation.invoiceId) {
+      reservation.startDate = moment(reservation.endDate).toDate();
+      reservation.endDate = checkout;
+      reservation.advance = 0;
+      reservation.deposit = 0;
+      reservation.id = 0;
+      reservation.invoiceId = null;
+      reservation.beds.forEach(bed => bed.id = 0)
+      const newNumber = await reservationStore.findNewReservationNumber(moment().year());
+      reservation.number = moment().year() + "/" + newNumber;
+      reservationStore.addReservationDb(reservation)
+          .then(() => {
+            toast.add({
+              severity: "info",
+              summary: "Potwierdzenie",
+              detail: "Dodano nową rezerwację.",
+              life: 4000,
+            });
+            const redirect = JSON.stringify({name: 'Calendar'})
+            router.push({path: '/refresh', query: {redirect: redirect}})
+          })
+    } else {
+      reservation.endDate = checkout;
+      reservationStore.updateReservationDb(reservation)
+          .then(() => {
+            toast.add({
+              severity: "info",
+              summary: "Potwierdzenie",
+              detail: "Przedłużono rezerwację do " + moment(checkout).format('YYYY-MM-DD'),
+              life: 4000,
+            });
+          })
+    }
+  }
+  showExtendReservationsDialog.value = false;
+};
 </script>
 
 <template>
@@ -214,6 +347,12 @@ function getRoomShortName(roomName: string | undefined) {
       v-model:visible="showReservationInfoDialog"
       :reservation="reservationInfo!"
       @ok="showReservationInfoDialog = false"
+  />
+  <ExtendReservationsByEndDateDialog
+      v-model:visible="showExtendReservationsDialog"
+      :reservations="selectedReservations"
+      @cancel="showExtendReservationsDialog = false"
+      @save="submitExtend"
   />
   <Panel>
     <template #header>
@@ -231,6 +370,7 @@ function getRoomShortName(roomName: string | undefined) {
         </div>
       </div>
     </template>
+    <ContextMenu ref="menuRef" :model="menuItems" @hide="selectedReservation = null"/>
     <DataTable v-if="!reservationStore.loadingReservation && !roomStore.loadingRooms" ref="dataTableRef"
                :value="roomStore.getAllBeds" scrollable :scrollHeight="scrollHeight">
       <template #empty><p class="text-lg text-red-500">Nie znaleziono rezerwacji.</p></template>
@@ -256,20 +396,24 @@ function getRoomShortName(roomName: string | undefined) {
           </template>
           <template #body="{data}">
             <div class="w-full h-full py-3 "
-                 :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), getBodyOpacity(day))}`">
+                 :style="`background-color: ${UtilsService.hexToRgba(getBodyClass(data), getBodyOpacity(day))}`"
+                 @contextmenu.prevent="onRightClick($event, data, day)">
 
               <p class="relative" :class="{
                 'bg-red-600 hover:cursor-pointer': isBedReserved(data, day),
                 'cut-end': isLastReservedDay(data, day) && !isFirstReservedDay(data, day),
                 'cut-start': isFirstReservedDay(data, day) && !isLastReservedDay(data, day),
-                'cut-both': isFirstReservedDay(data, day) && isLastReservedDay(data, day)
+                'cut-both': isFirstReservedDay(data, day) && isLastReservedDay(data, day),
+                'bg-blue-400': isReservationSelected(data, day)
                 }"
-                @click="displayInfo(data, day)">&emsp;
+                 @click="displayInfo(data, day)"
+              >&emsp;
                 <span v-if="isSecondReservedDay(data, day)"
-                      class="absolute left-0 top-0 z-[6] text-white whitespace-nowrap text-center "
+                      class=" absolute left-0 top-0 z-[6] text-white whitespace-nowrap text-center"
                       @click="displayInfo(data, day)"
                       :style="{ width: getReservationLength(data, day) * 70 + 'px' }"
-                >{{ getReservation(data, day)?.customer?.name }} {{isContinuation(data, day)}}</span></p>
+                >{{ getReservation(data, day)?.customer?.name }} {{ isContinuation(data, day) }}</span>
+              </p>
             </div>
           </template>
         </Column>
@@ -297,30 +441,4 @@ function getRoomShortName(roomName: string | undefined) {
   /*clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 50% 50%, 0 100%);*/
   clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 50% 50%, 0 100%);
 }
-/*
-.cut-both {
-  position: relative;
-}
-
-.cut-both::before,
-.cut-both::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-}
-
-.cut-both::before {
-  background-color: rgb(220 38 38) ;  Lewy trójkąt
-  clip-path: polygon(0 0, 50% 50%, 0 100%);
-  left: 0;
-}
-
-.cut-both::after {
-  background-color: blue;  Prawy trójkąt
-  clip-path: polygon(100% 0, 50% 50%, 100% 100%);
-  right: 0;
-}
-*/
 </style>

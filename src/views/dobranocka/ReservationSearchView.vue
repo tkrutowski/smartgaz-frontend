@@ -114,6 +114,7 @@ const calculateNetSum = (() => {
 //SEARCH
 //
 function findAvailable() {
+  availableBeds.value.clear();
   reservationStore.getAvailableBedsFromDb(checkin.value!, checkout.value!)
       .then((rooms: Room[]) => {
         if (rooms.length === 0) {

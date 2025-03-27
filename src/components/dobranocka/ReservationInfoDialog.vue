@@ -57,13 +57,13 @@ const calculateNetSum = (() => {
 <template>
   <Dialog :style="{ width: '550px' }" header="Szczegóły rezerwacji" :modal="true">
 
+    <!--  CUSTOMER  -->
     <Fieldset legend="Klient" class="relative">
       <router-link class=""
                    :to="{ name: 'Customer', params: { isEdit: 'true', customerId: reservation.customer?.id || 0 } }"
                    style="text-decoration: none"
       >
-        <OfficeButton class="absolute top-1 right-3" text="Klient" btn-type="office-regular"
-                      :btn-disabled="invoice == null"/>
+        <OfficeButton class="absolute top-1 right-3" text="Klient" btn-type="office-regular"/>
       </router-link>
       <div class="flex flex-col gap-2 justify-center">
         <p class="text-sm">Nazwa:<span
@@ -83,6 +83,8 @@ const calculateNetSum = (() => {
         </p>
       </div>
     </Fieldset>
+
+    <!--  INVOICE  -->
     <Fieldset legend="Finanse" class="relative">
       <router-link class=""
                    :to="{ name: 'Invoice', params: { isEdit: 'true', invoiceId: invoice?.idInvoice || 0 } }"
@@ -95,8 +97,10 @@ const calculateNetSum = (() => {
         <p class="text-sm">Faktura nr:<span class="ml-2 font-semibold"> {{ invoice?.number }}</span></p>
         <p class="text-sm">Kwota do zapłaty:<span
             class="ml-2 font-semibold">{{ UtilsService.formatCurrency(calculateNetSum()) }}</span></p>
-        <p class="text-sm">Płatność:<span
-            class="ml-2 font-semibold"> {{ TranslationService.translateEnum("PaymentStatus", String(invoice?.paymentStatus)) }}</span>
+        <p class="text-sm" v-if="invoice">Płatność:<span
+            class="ml-2 font-semibold"> {{
+            TranslationService.translateEnum("PaymentStatus", String(invoice?.paymentStatus))
+          }}</span>
         </p>
         <p class="text-sm">Zaliczka:<span
             class="ml-2 font-semibold"> {{ UtilsService.formatCurrency(reservation.advance) }}</span></p>
@@ -104,14 +108,17 @@ const calculateNetSum = (() => {
             class="ml-2 font-semibold"> {{ UtilsService.formatCurrency(reservation.deposit) }}</span></p>
       </div>
     </Fieldset>
+
+    <!--    RESERVATION  -->
     <Fieldset legend="Rezerwacja" class="relative">
       <router-link
-                   :to="{ name: 'Reservation', params: { reservationId: reservation.id || 0 } }"
-                   style="text-decoration: none"
+          :to="{ name: 'Reservation', params: { reservationId: reservation.id || 0 } }"
+          style="text-decoration: none"
       >
         <OfficeButton class="absolute top-5 md:top-1 right-3" text="Rezerwacja" btn-type="office-regular"/>
       </router-link>
-      <p class="text-sm">Data pobytu:<span
+      <p class="text-sm">Rezerwacja nr:<span class="ml-2 font-semibold"> {{ reservation.number }}</span></p>
+      <p class="text-sm mb-2">Data pobytu:<span
           class="ml-2 font-semibold">{{ reservation.startDate }} - {{ reservation.endDate }}</span></p>
       <div class="flex flex-col gap-2 justify-center" v-for="bed in reservation.beds" :key="bed.bed.id">
         <p class="text-sm">Miejsce:<span
