@@ -404,7 +404,7 @@ const submitExtend = async (checkout: Date) => {
                 'cut-end': isLastReservedDay(data, day) && !isFirstReservedDay(data, day),
                 'cut-start': isFirstReservedDay(data, day) && !isLastReservedDay(data, day),
                 'cut-both': isFirstReservedDay(data, day) && isLastReservedDay(data, day),
-                'bg-blue-400': isReservationSelected(data, day)
+                '!bg-blue-400': isReservationSelected(data, day)
                 }"
                  @click="displayInfo(data, day)"
               >&emsp;
