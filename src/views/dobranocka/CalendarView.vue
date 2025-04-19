@@ -214,27 +214,25 @@ function getRoomShortName(roomName: string | undefined) {
 
 // selected rows
 const showExtendReservationsDialog = ref<boolean>(false);
-const selectedReservations = ref<Reservation[]>([]);
+const selectedReservations = ref<Set<Reservation>>(new Set());
 
 //---------------------------------------------------MENU------------------------------------
 const menuRef = ref();
 const menuItems = computed(() => {
   const reservationItems: MenuItem[] = [];
-  if (selectedReservation.value && selectedReservations.value.some(r => r.id === selectedReservation.value?.id)) {
+  if (selectedReservation.value && selectedReservations.value.has(selectedReservation.value)) {
     reservationItems.push({
       label: 'Odznacz rezerwacje',
       icon: 'pi pi-stop',
       disabled: !selectedReservation.value,
-      command: () => selectedReservations.value = selectedReservations.value.filter(
-          (r) => r.id !== selectedReservation.value?.id
-      ),
+      command: () => selectedReservations.value.delete(selectedReservation.value!)
     });
   } else {
     reservationItems.push({
       label: 'Zaznacz rezerwacje',
       icon: 'pi pi-check-square',
       disabled: selectedReservation.value == null,
-      command: () => selectedReservations.value.push(selectedReservation.value!),
+      command: () => selectedReservations.value.add(selectedReservation.value!),
     });
   }
   reservationItems.push({
@@ -243,10 +241,10 @@ const menuItems = computed(() => {
   reservationItems.push({
     label: 'Przedłuż',
     icon: 'pi pi-sign-in',
-    disabled: selectedReservations.value.length === 0 && selectedReservation.value === null,
+    disabled: selectedReservations.value.size === 0 && selectedReservation.value === null,
     command: () => {
-      if (selectedReservations.value.length === 0 && selectedReservation.value !== null) {
-        selectedReservations.value.push(selectedReservation.value);
+      if (selectedReservations.value.size === 0 && selectedReservation.value !== null) {
+        selectedReservations.value.add(selectedReservation.value);
       }
       showExtendReservationsDialog.value = true
     },
@@ -254,7 +252,15 @@ const menuItems = computed(() => {
   reservationItems.push({
     label: 'Wystaw fakturę',
     icon: 'pi pi-dollar',
-    disabled: (selectedReservation.value !== null && selectedReservation.value.invoiceId !== null),
+    disabled: ((selectedReservation.value !== null && selectedReservation.value.invoiceId !== null) || !isReservationSelectedForOneCustomer.value),
+    command: () => {
+      selectedReservations.value.add(selectedReservation.value!)
+      reservationStore.selectedReservations = Array.from(selectedReservations.value);
+      router.push({
+        name: "Invoice",
+        params: {isEdit: "false", invoiceId: -1},
+      });
+    },
   });
   reservationItems.push({
     label: 'Zmień status',
@@ -294,11 +300,30 @@ function onRightClick(event: Event, bed: Bed, date: Date) {
 function isReservationSelected(bedToCheck: Bed, date: Date): boolean {
   const reservation = getReservation(bedToCheck, date);
   if (reservation) {
-    return (selectedReservations.value.some(r => r.id === reservation.id) || (selectedReservation.value !== null  && selectedReservation.value.id === reservation.id))
+    return (selectedReservations.value.has(reservation) || (selectedReservation.value !== null  && selectedReservation.value.id === reservation.id))
   } else {
     return false;
   }
 }
+
+const isReservationSelectedForOneCustomer = computed(() => {
+  const iterator = selectedReservations.value.values();
+  const first = iterator.next().value;
+
+  if (!first) return true;
+
+  for (const reservation of iterator) {
+    if (reservation.customer?.id !== first.customer?.id) {
+      return false;
+    }
+  }
+
+  if (selectedReservation.value !== null){
+       return selectedReservation.value.customer?.id === first.customer?.id
+  }
+
+  return true;
+})
 
 //-----------------------------------------EXTEND RESERVATION
 const submitExtend = async (checkout: Date) => {
@@ -350,7 +375,7 @@ const submitExtend = async (checkout: Date) => {
   />
   <ExtendReservationsByEndDateDialog
       v-model:visible="showExtendReservationsDialog"
-      :reservations="selectedReservations"
+      :reservations="[...selectedReservations]"
       @cancel="showExtendReservationsDialog = false"
       @save="submitExtend"
   />
