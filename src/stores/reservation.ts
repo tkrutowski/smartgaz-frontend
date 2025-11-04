@@ -96,9 +96,9 @@ export const useReservationStore = defineStore('reservation', {
         //
         // CHECK IF RESERVATION ENDS THAT DAY FOR THAT BED
         //
-        async isEndDateReservation(idBed:number, endDate: Date):Promise<boolean> {
-            console.log('START - isEndDateReservation()', idBed, endDate)
-            const response = await httpCommon.get(`/v1/dobranocka/reservation/check-end?bed=${idBed}&date=${endDate.toLocaleDateString()}`)
+        async isEndDateReservation(idBeds: number[], endDate: Date): Promise<{ [key: number]: boolean }> {
+            console.log('START - isEndDateReservation()', idBeds, endDate)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/check-end?beds=${idBeds}&date=${endDate.toLocaleDateString()}`)
             console.log('END - isEndDateReservation()', response)
             return response.data;
         },
@@ -106,9 +106,9 @@ export const useReservationStore = defineStore('reservation', {
         //
         // CHECK IF RESERVATION ENDS THAT DAY FOR THAT BED
         //
-        async isStartDateReservation(idBed:number, startDate: Date):Promise<boolean> {
-            console.log('START - isStartDateReservation()', idBed, startDate)
-            const response = await httpCommon.get(`/v1/dobranocka/reservation/check-start?bed=${idBed}&date=${startDate.toLocaleDateString()}`)
+        async isStartDateReservation(idBeds: number[], startDate: Date): Promise<{ [key: number]: boolean }> {
+            console.log('START - isStartDateReservation()', idBeds, startDate)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/check-start?beds=${idBeds}&date=${startDate.toLocaleDateString()}`)
             console.log('END - isStartDateReservation()', response)
             return response.data;
         },

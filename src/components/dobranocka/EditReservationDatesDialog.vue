@@ -95,10 +95,10 @@ async function checkAvailable() {
         bed.id,
         reservationId.value
     );
-    const overlappingCheck = await reservationStore.isStartDateReservation(bed.id, checkout.value!);
+    const overlappingCheck = await reservationStore.isStartDateReservation([bed.id], checkout.value!);
     console.log("overlappingCheck",overlappingCheck)
     bed.availability = result ? "available" : "unavailable";
-    bed.overlapping = overlappingCheck;
+    bed.overlapping = overlappingCheck[bed.id] ?? false;
   });
 
   await Promise.all(promises); // Czekamy, aż wszystkie się zakończą

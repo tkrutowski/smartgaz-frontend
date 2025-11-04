@@ -144,15 +144,9 @@ function findAvailable() {
 const endDateIcons = ref<Map<number, boolean>>(new Map<number, boolean>());
 const fetchEndDateIcons = async () => {
   const bedList = Array.from(availableBeds.value.values()).flat();
-
-  const results = await Promise.all(
-      bedList.map(async (bed: Bed) => ({
-        id: bed.id,
-        value: await reservationStore.isEndDateReservation(bed.id, checkin.value!),
-      }))
-  );
-  results.forEach(({ id, value }) => {
-    endDateIcons.value.set(id, value);
+  const results = await reservationStore.isEndDateReservation(bedList.map((bed) => bed.id), checkin.value!)
+  Object.entries(results).forEach(([id, value]) => {
+    endDateIcons.value.set(Number(id), value);
   });
 };
 const checkEndDate = computed(() => (bed: Bed) => {
@@ -164,14 +158,9 @@ const startDateIcons = ref<Map<number, boolean>>(new Map<number, boolean>());
 const fetchStartDateIcons = async () => {
   const bedList = Array.from(availableBeds.value.values()).flat();
 
-  const results = await Promise.all(
-      bedList.map(async (bed) => ({
-        id: bed.id,
-        value: await reservationStore.isStartDateReservation(bed.id, checkout.value!),
-      }))
-  );
-  results.forEach(({ id, value }) => {
-    startDateIcons.value.set(id, value);
+  const results = await reservationStore.isStartDateReservation(bedList.map((bed) => bed.id), checkout.value!)
+  Object.entries(results).forEach(([id, value]) => {
+    endDateIcons.value.set(Number(id), value);
   });
 };
 const checkStartDate = computed(() => (bed: Bed) => {
@@ -420,9 +409,11 @@ watch(checkout, (_, oldVal) => {
                   <span class="text-xl">{{ bed.name }}</span>
                   <Tag :severity="RentService.getSeverity(bed.status.toString() as keyof typeof BedStatus)">
                     <div class="flex gap-2 items-center">
-                      <span :class="{ 'pi pi-exclamation-circle' :checkEndDate(bed)}" title="Inna rezerwacja kończy się tego dnia."/>
-                      <span>{{TranslationService.translateEnum('BedStatus', bed.status)}}</span>
-                      <span :class="{ 'pi pi-exclamation-circle' :checkStartDate(bed)}" title="Inna rezerwacja zaczyna się tego dnia."/>
+                      <span :class="{ 'pi pi-exclamation-circle' :checkEndDate(bed)}"
+                            title="Inna rezerwacja kończy się tego dnia."/>
+                      <span>{{ TranslationService.translateEnum('BedStatus', bed.status) }}</span>
+                      <span :class="{ 'pi pi-exclamation-circle' :checkStartDate(bed)}"
+                            title="Inna rezerwacja zaczyna się tego dnia."/>
                     </div>
                   </Tag>
                 </div>
