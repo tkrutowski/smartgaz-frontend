@@ -160,7 +160,11 @@ const downloadPdf = (idInvoice: number, invoiceNumber:string) => {
           detail: (reason?.response?.data as { message: string }).message,
           life: 5000,
         });
-      });
+      })
+       .finally(() => {
+         invoiceStore.loadingFile = false
+         console.log("END - downloadPdf for ", invoiceNumber)
+       });
 }
 
 

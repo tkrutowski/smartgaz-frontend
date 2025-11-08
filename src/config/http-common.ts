@@ -15,10 +15,12 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
+      console.log('REQUEST interceptor: ', config);
     if (
       config.url?.endsWith('/login') ||
       config.url?.endsWith('/refresh') ||
-      config.url?.endsWith('/test')
+      config.url?.endsWith('/test') ||
+      config.url?.startsWith('https://smartgaz.s3.eu-central-1.amazonaws.com/')
     ) {
       console.log('Żądanie do /login, pomijanie nagłówka Authorization')
     } else {

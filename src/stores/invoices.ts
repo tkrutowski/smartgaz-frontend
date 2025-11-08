@@ -187,23 +187,34 @@ export const useInvoiceStore = defineStore("invoice", {
         // DOWNLOAD PDF
         //
         async getInvoicePdfFromDb(invoiceID: number) {
-            console.log("START - getInvoicePdfFromDb()");
+            console.log("START - getInvoicePdfFromDb()", invoiceID);
             this.loadingFile = true;
-            const response = await httpCommon.get(
-                `/v1/dobranocka/invoice/pdf/` + invoiceID,
-                {
-                    responseType: "blob",
-                }
-            );
-            console.log("getInvoicePdfFromDb", response);
-            // Sprawdzenie, czy odpowiedź jest prawidłowa
-            if (response.status !== 200) {
-                throw new Error(`Błąd serwera: ${response.status}`);
-            }
+            // const response = await httpCommon.get(
+            //     `/v1/dobranocka/invoice/pdf/` + invoiceID,
+            // );
+const test="https://smartgaz.s3.eu-central-1.amazonaws.com/3c2ac814-9f69-4627-aac8-0b9ef9231eeb.pdf"
+            // console.log("getInvoicePdfFromDb", response);
+            // const responseFromS3= await this.getPdfFromS3(response.data);
+            const responseFromS3= await this.getPdfFromS3(test);
             this.loadingFile = false;
             console.log("END - getInvoicePdfFromDb()");
-            return response
+            return responseFromS3;
         },
+
+        async getPdfFromS3(url: string) {
+            console.log("START - getPdfFromS3()");
+            try {
+                const response = await httpCommon.get(url, {
+                    responseType: 'blob', // Ważne: odbierz dane jako Blob
+                });
+            console.log("START - getPdfFromS3()", response);
+                return response;
+            } catch (error) {
+                console.error("Błąd podczas pobierania PDF z S3", error);
+                throw error;
+            }
+        },
+
 
         convertResponse(invoice: Invoice) {
             console.log("getInvoicesFromDb()", invoice);
