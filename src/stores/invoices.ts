@@ -189,13 +189,11 @@ export const useInvoiceStore = defineStore("invoice", {
         async getInvoicePdfFromDb(invoiceID: number) {
             console.log("START - getInvoicePdfFromDb()", invoiceID);
             this.loadingFile = true;
-            // const response = await httpCommon.get(
-            //     `/v1/dobranocka/invoice/pdf/` + invoiceID,
-            // );
-const test="https://smartgaz.s3.eu-central-1.amazonaws.com/3c2ac814-9f69-4627-aac8-0b9ef9231eeb.pdf"
-            // console.log("getInvoicePdfFromDb", response);
-            // const responseFromS3= await this.getPdfFromS3(response.data);
-            const responseFromS3= await this.getPdfFromS3(test);
+            const response = await httpCommon.get(
+                `/v1/dobranocka/invoice/pdf/` + invoiceID,
+            );
+            console.log("getInvoicePdfFromDb", response);
+            const responseFromS3= await this.getPdfFromS3(response.data);
             this.loadingFile = false;
             console.log("END - getInvoicePdfFromDb()");
             return responseFromS3;
