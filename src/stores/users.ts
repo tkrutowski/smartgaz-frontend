@@ -18,6 +18,9 @@ export const useUsersStore = defineStore('user', {
             console.log('getUsers from pinia', state)
             return state.users
         },
+        someLoading: state => {
+            return state.loadingPrivileges || state.loadingRoles || state.loadingUsers
+        }
         // getUserByPrivileges: (state) => {
         //     const authorization = useAuthorizationStore()
         //     if (authorization.hasAccessFinancePurchaseWriteAll) {

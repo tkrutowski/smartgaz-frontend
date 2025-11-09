@@ -23,6 +23,9 @@ export const useInvoiceStore = defineStore("invoice", {
     getters: {
         getSortedInvoices: (state) =>
             state.invoices.sort((a, b) => a.idInvoice - b.idInvoice),
+        someLoading: state => {
+            return state.loadingInvoices || state.loadingInvoiceNo || state.loadingPaymentType || state.loadingFile || state.loadingWait
+        }
     },
     //actions = metody w komponentach
     actions: {
@@ -215,7 +218,7 @@ export const useInvoiceStore = defineStore("invoice", {
 
 
         convertResponse(invoice: Invoice) {
-            console.log("getInvoicesFromDb()", invoice);
+            // console.log("getInvoicesFromDb()", invoice);
             return {
                 ...invoice,
                 invoiceDate: invoice.invoiceDate ? new Date(invoice.invoiceDate) : null,

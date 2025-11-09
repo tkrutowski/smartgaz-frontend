@@ -3,9 +3,26 @@ import {computed, ref} from 'vue'
 import {useAuthorizationStore} from '@/stores/authorization'
 import router from '@/router'
 import {useRoute} from 'vue-router';
+import {useUsersStore} from "@/stores/users.ts";
+import {useCustomerStore} from "@/stores/customers.ts";
+import {useInvoiceStore} from "@/stores/invoices.ts";
+import {useReservationStore} from "@/stores/reservation.ts";
+import {useRoomStore} from "@/stores/rooms.ts";
 
 const route = useRoute();
+
 const authorizationStore = useAuthorizationStore()
+const userStore = useUsersStore()
+
+const customerStore = useCustomerStore()
+const invoiceStore = useInvoiceStore()
+const reservationStore = useReservationStore()
+const roomStore = useRoomStore()
+
+const allLoading = computed(() => {
+  return userStore.someLoading || authorizationStore.loading || customerStore.loadingCustomer || invoiceStore.someLoading || reservationStore.loadingReservation || roomStore.loadingRooms;
+});
+
 const activeMenu = computed(() => {
   // console.log('activeMenu', route.path)
   if (route.path.includes('/home')) return 'Tablica';
@@ -207,6 +224,13 @@ const items = ref([
     <template #end>
       <div class="flex items-center">
         <p class="px-5 mr-10 text-lg md:hidden text-primary font-bold">{{ activeMenu }}</p>
+        <ProgressSpinner
+            v-if="allLoading"
+            class="mr-10"
+            style="width: 30px; height: 30px"
+            strokeWidth="6"
+            animationDuration=".5s"
+        />
         <div v-if="!authorizationStore.isAuthenticatedOrToken">
           <router-link :to="{ name: 'login' }" style="text-decoration: none">
             <Button class="font-bold uppercase tracking-wider" size="small" outlined>zaloguj</Button>

@@ -1,16 +1,33 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAuthorizationStore } from '@/stores/authorization'
+import {computed, ref} from 'vue'
+import {useAuthorizationStore} from '@/stores/authorization'
 import router from '@/router'
+import OfficeIconButton from "@/components/OfficeIconButton.vue";
+import {useUsersStore} from "@/stores/users.ts";
+import {useCustomerStore} from "@/stores/customers.ts";
+import {useInvoiceStore} from "@/stores/invoices.ts";
+import {useReservationStore} from "@/stores/reservation.ts";
+import {useRoomStore} from "@/stores/rooms.ts";
 
 const authorizationStore = useAuthorizationStore()
+const userStore = useUsersStore()
+
+const customerStore = useCustomerStore()
+const invoiceStore = useInvoiceStore()
+const reservationStore = useReservationStore()
+const roomStore = useRoomStore()
+
+const allLoading = computed(() => {
+  return userStore.someLoading || authorizationStore.loading || customerStore.loadingCustomer || invoiceStore.someLoading || reservationStore.loadingReservation || roomStore.loadingRooms;
+});
+
 const items = ref([
   {
     label: 'Home',
     icon: 'pi pi-fw pi-home',
     // to: { name: "Home" },
     command: () => {
-      router.push({ name: 'Home' })
+      router.push({name: 'Home'})
     },
   },
   {
@@ -67,18 +84,28 @@ const items = ref([
 <!--      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />-->
     </template>
     <template #end>
-      <div v-if="!authorizationStore.isAuthenticatedOrToken">
-        <router-link :to="{ name: 'login' }" style="text-decoration: none">
-          <Button class="font-bold uppercase tracking-wider" outlined>zaloguj</Button>
-        </router-link>
-      </div>
-      <div v-else>
-        <Button
-          class="font-bold uppercase tracking-wider"
-          outlined
-          :onclick="authorizationStore.logout"
-          >wyloguj</Button
-        >
+      <div class="flex flex-row gap-4">
+        <OfficeIconButton
+            class="cursor-default"
+            icon="pi pi-check-square"
+            severity="success"
+            :loading="allLoading"
+            title="Określa, czy wyświetlane dane są aktualne."
+        />
+        <div v-if="!authorizationStore.isAuthenticatedOrToken">
+          <router-link :to="{ name: 'login' }" style="text-decoration: none">
+            <Button class="font-bold uppercase tracking-wider" outlined>zaloguj</Button>
+          </router-link>
+        </div>
+        <div v-else>
+          <Button
+              class="font-bold uppercase tracking-wider"
+              outlined
+              :onclick="authorizationStore.logout"
+          >wyloguj
+          </Button
+          >
+        </div>
       </div>
     </template>
   </Menubar>
