@@ -7,7 +7,8 @@ import router from "../router";
 const apiClient: AxiosInstance = axios.create({
   // baseURL: "https://smartgaz.focikhome.synology.me/api",
   // baseURL: 'http://localhost:8070/api',
-  baseURL: 'https://9kwcfmbmf6.execute-api.eu-central-1.amazonaws.com/prod/api',
+  // baseURL: 'https://9kwcfmbmf6.execute-api.eu-central-1.amazonaws.com/prod/api',
+  baseURL: "https://api.smartgaz.focik.net/api",
   headers: {
     'Content-type': 'application/json',
   },
