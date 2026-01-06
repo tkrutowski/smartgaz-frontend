@@ -270,6 +270,7 @@ const showErrorName = () => {
       <Panel>
         <template #header>
           <OfficeIconButton
+              class="text-primary-500"
               title="Powrót do listy pokoi"
               icon="pi pi-fw pi-table"
               @click="() => router.push({ name: 'Rooms' })"
@@ -398,7 +399,7 @@ const showErrorName = () => {
                 <OfficeIconButton
                     title="Usuń łóżko."
                     icon="pi pi-trash"
-                    severity="danger"
+                    class="text-red-500"
                     @click="
                         confirmDeleteItem(slotProps.data, slotProps.index)
                       "

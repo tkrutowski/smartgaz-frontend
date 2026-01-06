@@ -43,15 +43,14 @@ const editRoom = () => {
           <OfficeIconButton
               title="Edycja pokoju"
               icon="pi pi-file-edit"
-              class="pr-0"
+              class="pr-0 text-primary-500"
               @click="editRoom()"
           />
 
           <OfficeIconButton
               title="Usunięcie pokoju"
               icon="pi pi-trash"
-              severity="danger"
-              class="mr-2"
+              class="mr-2 text-red-500"
               @click="emit('delete', props.room)"
           />
         </div>

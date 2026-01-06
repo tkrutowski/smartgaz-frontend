@@ -401,7 +401,7 @@ const submitExtend = async (checkout: Date) => {
       <template #empty><p class="text-lg text-red-500">Nie znaleziono rezerwacji.</p></template>
       <Column field="name" frozen style="z-index: 7">
         <template #header>
-          <OfficeIconButton icon="pi pi-home" @click="scrollToToday()"/>
+          <OfficeIconButton class="text-primary-500" icon="pi pi-home" @click="scrollToToday()"/>
         </template>
         <template #body="{data}">
           <p class="h-full py-3 pr-2 text-nowrap"

@@ -477,6 +477,7 @@ const getCustomerLabel = (option: Customer) =>{
           <OfficeIconButton
               title="Powrót do listy faktur"
               icon="pi pi-fw pi-table"
+              class="text-primary-500"
               @click="() => router.push({ name: 'Invoices' })"
           />
           <div class="w-full flex justify-center">
@@ -738,7 +739,7 @@ const getCustomerLabel = (option: Customer) =>{
                   <OfficeIconButton
                       title="Usuń pozycję."
                       icon="pi pi-trash"
-                      severity="danger"
+                      class="text-red-500"
                       @click="
                         confirmDeleteItem(slotProps.data, slotProps.index)
                       "

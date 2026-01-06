@@ -250,6 +250,7 @@ onUnmounted(() => {
         <template #body="slotProps">
           <div class="flex flex-row gap-1 justify-content-end">
             <OfficeIconButton
+                class="text-primary-500"
                 title="Edytuj klienta"
                 icon="pi pi-file-edit"
                 @click="editCustomer(slotProps.data)"
@@ -257,7 +258,7 @@ onUnmounted(() => {
             <OfficeIconButton
                 title="Usuń klienta"
                 icon="pi pi-trash"
-                severity="danger"
+                class="text-red-500"
                 @click="confirmDeleteCustomer(slotProps.data)"
             />
           </div>

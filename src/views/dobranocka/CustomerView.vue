@@ -249,6 +249,7 @@ const showErrorPhone = () => {
       <Panel>
         <template #header>
           <OfficeIconButton
+              class="text-primary-500"
               title="Powrót do listy klientów"
               icon="pi pi-fw pi-table"
               @click="() => router.push({ name: 'Customers' })"

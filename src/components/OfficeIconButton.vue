@@ -9,15 +9,15 @@ const props = defineProps({
     type: Boolean,
     required: false,
   },
-  active: {
+  loading: {
     type: Boolean,
     required: false,
     default: false,
   },
-  severity: {
-    type: String,
+  active: {
+    type: Boolean,
     required: false,
-    default: 'warn',
+    default: false,
   },
   rounded: {
     type: Boolean,
@@ -27,26 +27,55 @@ const props = defineProps({
 })
 </script>
 <template>
-  <Button
-    class="icon-only border-0 disabled:text-surface-600 disabled:dark:text-surface-100"
-    :icon="props.icon"
-    :rounded="props.rounded"
-    outlined
-    :class="{ isActive: active }"
-    :severity="props.severity"
-    :disabled="props.btnDisabled"
+    <span v-if="props.loading" class="loading-spinner-container">
+      <i class="loading-spinner pi pi-spin pi-spinner"></i>
+    </span>
+  <Button v-else
+          class="icon-only"
+          :icon="props.icon"
+          :rounded="props.rounded"
+          :class="{ isActive: active }"
+          :disabled="props.btnDisabled || props.loading"
+          :loading="props.loading"
   >
   </Button>
 </template>
 <style scoped>
 .icon-only {
-  outline: none; /* Brak zarysu po kliknięciu */
-  padding: 10px 20px; /* Padding wewnątrz przycisku */
-  border-radius: 4px; /* Zaokrąglenie rogów przycisku */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Cień zewnętrzny dla efektu głębi */
-  transition:
-    box-shadow 0.3s ease,
-    transform 0.3s ease; /* Animacja dla płynności */
+  outline: none !important;
+  border: none !important;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: none !important;
+  background: transparent !important;
+  transition: none;
+}
+
+.icon-only :deep(.p-button-icon) {
+  transition: transform 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.loading-spinner-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.loading-spinner {
+  font-size: 1.2rem;
+  transform-origin: center center;
+}
+
+.icon-only:disabled {
+  color: #53575e !important;
+  opacity: 0.6;
+}
+
+.icon-only:disabled :deep(.p-button-icon) {
+  color: #53575e !important;
 }
 
 .icon-only:focus {
@@ -54,16 +83,23 @@ const props = defineProps({
   box-shadow: none !important;
 }
 
-.icon-only:hover:not(:disabled) {
-  background-color: transparent !important;
+.icon-only:hover :deep(.p-button-icon) {
   transform: scale(1.4);
-  border: 0;
 }
+
 .isActive {
-  /* Przykładowy styl dla efektu wciśniętego przycisku */
-  background-color: #b35f00 !important;
+  position: relative;
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
-  transform: translateY(2px);
-  border: 2px solid #f90;
+  border: 1px solid currentColor !important;
+}
+
+.isActive::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0.2;
+  border-radius: inherit;
+  pointer-events: none;
 }
 </style>

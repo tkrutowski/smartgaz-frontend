@@ -84,11 +84,10 @@ const items = ref([
 <!--      <img alt="logo" src="@/assets/logo_mini.png" height="30" class="mr-2" />-->
     </template>
     <template #end>
-      <div class="flex flex-row gap-4">
+      <div class="flex flex-row gap-4 text-green-500">
         <OfficeIconButton
             class="cursor-default"
             icon="pi pi-check-square"
-            severity="success"
             :loading="allLoading"
             title="Określa, czy wyświetlane dane są aktualne."
         />

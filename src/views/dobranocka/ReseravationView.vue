@@ -367,6 +367,7 @@ onMounted(async () => {
       <div class="flex flex-col md:flex-row w-full">
         <div class="flex gap-3 order-2 md:order-1">
           <OfficeIconButton
+              class="text-primary-500"
               title="Powrót do listy rezerwacji"
               icon="pi pi-fw pi-table"
               @click="() => router.push({ name: 'Reservations' })"
@@ -390,6 +391,7 @@ onMounted(async () => {
           {{ moment(reservation.endDate).format("DD-MM-YYYY") }}</span></p>
           </div>
           <OfficeIconButton
+              class="text-primary-500"
               title="Zamień łóżko na inne"
               icon="pi pi-file-edit"
               @click="showEditReservationDatesDialog=true"
@@ -464,7 +466,7 @@ onMounted(async () => {
             <OfficeIconButton
                 title="Usuń łóżko z rezerwacji"
                 icon="pi pi-trash"
-                severity="danger"
+                class="text-red-500"
                 :disabled="reservation.invoiceId != null && !isReservationExtended"
                 @click="confirmDeleteBed(bed.bed)"
             />

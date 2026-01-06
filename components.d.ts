@@ -33,6 +33,7 @@ declare module 'vue' {
     InputMask: typeof import('primevue/inputmask')['default']
     InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
+    InstanceControl: typeof import('./src/components/InstanceControl.vue')['default']
     Menubar: typeof import('primevue/menubar')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
     OfficeButton: typeof import('./src/components/OfficeButton.vue')['default']

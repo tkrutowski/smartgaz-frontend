@@ -390,8 +390,9 @@ const getCustomerLabel = (customer:Customer) =>{
           <div class="flex flex-row gap-1 justify-content-end">
             <OfficeIconButton
                 title="Pobierz PDF"
+                class="text-primary-500"
                 icon="pi pi-file-pdf"
-                :btn-disabled="invoiceStore.loadingFile"
+                :loading="invoiceStore.loadingFile"
                 @click="
                 downloadPdf(
                   slotProps.data.idInvoice,
@@ -400,6 +401,7 @@ const getCustomerLabel = (customer:Customer) =>{
               "
             />
             <OfficeIconButton
+                class="text-primary-500"
                 title="Edytuj fakturę"
                 icon="pi pi-file-edit"
                 @click="editItem(slotProps.data)"
@@ -407,7 +409,7 @@ const getCustomerLabel = (customer:Customer) =>{
             <OfficeIconButton
                 title="Usuń fakturę"
                 icon="pi pi-trash"
-                severity="danger"
+                class="text-red-500"
                 @click="confirmDeleteInvoice(slotProps.data)"
             />
           </div>

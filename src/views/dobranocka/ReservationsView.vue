@@ -436,6 +436,7 @@ const checkCustomers = computed(() => {
             <!--               disabled-->
             <!--            />-->
             <OfficeIconButton
+                class="text-primary-500"
                 title="Edytuj rezerwację"
                 icon="pi pi-file-edit"
                 @click="editReservation(slotProps.data)"
@@ -443,7 +444,7 @@ const checkCustomers = computed(() => {
             <OfficeIconButton
                 title="Usuń rezerwację"
                 icon="pi pi-trash"
-                severity="danger"
+                class="text-red-500"
                 @click="confirmDeleteReservation(slotProps.data)"
             />
           </div>
