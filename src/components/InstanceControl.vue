@@ -86,10 +86,10 @@
 
   const buttonTitle = computed(() => {
     if (status.value === 'running') {
-      return `Naciścnij aby wyłączyć EC2 ${props.nameInstance}`;
+      return `Naciśnij aby wyłączyć EC2 ${props.nameInstance}`;
     }
     if (status.value === 'stopped') {
-      return `Naciścnij aby uruchomić EC2 ${props.nameInstance}`;
+      return `Naciśnij aby uruchomić EC2 ${props.nameInstance}`;
     }
     // stopped lub null
     return 'EC2 ${props.nameInstance}';

@@ -72,10 +72,10 @@ export const useReservationStore = defineStore('reservation', {
         //GET AVAILABLE BEDS FROM DB
         //
         async getAvailableBedsFromDb(start: Date, end: Date): Promise<Room[]> {
-            console.log('START - getAvailableBedsFromDb()', start.toLocaleDateString())
+            console.log('START - getAvailableBedsFromDb()', moment(start).format("YYYY-MM-DD"))
             this.loadingReservation = true
 
-            const response = await httpCommon.get(`/v1/dobranocka/reservation/search?start=${start.toLocaleDateString()}&end=${end.toLocaleDateString()}`)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/search?start=${moment(start).format("YYYY-MM-DD")}&end=${moment(end).format("YYYY-MM-DD")}`)
             console.log('getRoomsFromDb() - Ilosc[]: ' + response.data.length)
             this.loadingReservation = false
             console.log('END - getAvailableBedsFromDb()')
@@ -88,7 +88,7 @@ export const useReservationStore = defineStore('reservation', {
         async checkBedAvailabilityFromDb(start: Date, end: Date, bedToCheckId: number, currentReservationId: number): Promise<boolean> {
             console.log('START - checkBedAvailabilityFromDb()', bedToCheckId)
 
-            const response = await httpCommon.get(`/v1/dobranocka/reservation/checkbed?start=${start.toLocaleDateString()}&end=${end.toLocaleDateString()}&bedId=${bedToCheckId}&reservationId=${currentReservationId}`)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/checkbed?start=${moment(start).format("YYYY-MM-DD")}}&end=${moment(end).format("YYYY-MM-DD")}&bedId=${bedToCheckId}&reservationId=${currentReservationId}`)
             console.log('END - checkBedAvailabilityFromDb()')
             return response.data;
         },
