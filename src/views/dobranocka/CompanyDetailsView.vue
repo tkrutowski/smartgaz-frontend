@@ -115,7 +115,7 @@ const showErrorName = () => {
   return submitted.value && company.value.name.length <= 0;
 };
 const showErrorNip = () => {
-  if (company.value.nip.length > 0) {
+  if (company.value.nip && company.value.nip.length > 0) {
     const isTenDigits = /^\d{10}$/.test(company.value.nip);
     return submitted.value && company.value.nip.length > 0 && !isTenDigits;
   }else {
@@ -123,7 +123,7 @@ const showErrorNip = () => {
   }
 };
 const showErrorRegon = () => {
-  if (submitted.value && company.value.regon.length > 0) {
+  if (submitted.value && company.value.regon && company.value.regon.length > 0) {
     const isNineDigits = /^\d{9}$/.test(company.value.regon);
     const isFourteenDigits = /^\d{14}$/.test(company.value.regon);
     return !(isNineDigits || isFourteenDigits);
@@ -149,25 +149,25 @@ const showErrorCity = () => {
   return submitted.value && company.value.city.length <= 0;
 };
 const showErrorMail = () => {
-  if (submitted.value && company.value.mail.length > 0) {
+  if (submitted.value && company.value.mail && company.value.mail.length > 0) {
     return !company.value.mail.includes("@");
   }
   return false;
 };
 const showErrorPhone1 = () => {
-  if (submitted.value && company.value.phone1.length > 0) {
+  if (submitted.value && company.value.phone1 && company.value.phone1.length > 0) {
     return !/^[0-9]+$/.test(company.value.phone1);
   }
   return false;
 };
 const showErrorPhone2 = () => {
-  if (submitted.value && company.value.phone2.length > 0) {
+  if (submitted.value && company.value.phone2 && company.value.phone2.length > 0) {
     return !/^[0-9]+$/.test(company.value.phone2);
   }
   return false;
 };
 const showErrorFax = () => {
-  if (submitted.value && company.value.fax.length > 0) {
+  if (submitted.value && company.value.fax && company.value.fax.length > 0) {
     return !/^[0-9]+$/.test(company.value.fax);
   }
   return false;
