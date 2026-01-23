@@ -180,6 +180,8 @@ async function editInvoice() {
   } else {
     invoice.value.number = invoiceYear.value + "/" + invoiceNumber.value;
     btnSaveDisabled.value = true;
+    const invoiceDate = moment(invoice.value.invoiceDate);
+    invoice.value.paymentDate = invoiceDate.add(paymentDeadline.value, 'day').toDate()
     await invoiceStore.updateInvoiceDb(invoice.value)
         .then(() => {
           toast.add({
