@@ -88,7 +88,7 @@ export const useReservationStore = defineStore('reservation', {
         async checkBedAvailabilityFromDb(start: Date, end: Date, bedToCheckId: number, currentReservationId: number): Promise<boolean> {
             console.log('START - checkBedAvailabilityFromDb()', bedToCheckId)
 
-            const response = await httpCommon.get(`/v1/dobranocka/reservation/checkbed?start=${moment(start).format("YYYY-MM-DD")}}&end=${moment(end).format("YYYY-MM-DD")}&bedId=${bedToCheckId}&reservationId=${currentReservationId}`)
+            const response = await httpCommon.get(`/v1/dobranocka/reservation/checkbed?start=${moment(start).format("YYYY-MM-DD")}&end=${moment(end).format("YYYY-MM-DD")}&bedId=${bedToCheckId}&reservationId=${currentReservationId}`)
             console.log('END - checkBedAvailabilityFromDb()')
             return response.data;
         },
