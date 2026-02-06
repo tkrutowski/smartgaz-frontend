@@ -1,24 +1,61 @@
 <script setup lang="ts">
-import {onMounted, ref, watch} from 'vue'
-import router from '../router'
-import {useAuthorizationStore} from '../stores/authorization'
-import {useToast} from 'primevue/usetoast'
+import { useAuthorizationStore } from "@/stores/authorization";
+import { onMounted, ref, watch } from "vue";
+import router from "@/router";
+import { useToast } from "primevue/usetoast";
+import ProgressBar from "primevue/progressbar";
+import { useEc2Control } from "@/composables/useEc2Control";
+import { EC2_INSTANCE_ID } from "@/config/ec2";
 
-const authorizationStore = useAuthorizationStore()
+const authorizationStore = useAuthorizationStore();
+const toast = useToast();
+const { ensureInstanceRunning } = useEc2Control();
 
-const username = ref<string>('')
-const password = ref<string>('')
-const toast = useToast()
+const username = ref<string>("");
+const password = ref<string>("");
+
+type LoginPhase = "idle" | "checking" | "starting" | "waiting" | "logging_in";
+const loginPhase = ref<LoginPhase>("idle");
+
+const phaseMessage: Record<Exclude<LoginPhase, "idle">, string> = {
+  checking: "Sprawdzam serwer…",
+  starting: "Uruchamiam serwer…",
+  waiting: "Oczekiwanie na uruchomienie (może zająć 1–2 min)…",
+  logging_in: "Logowanie…",
+};
 
 onMounted(() => {
-  console.log('MOUNTED')
-  authorizationStore.loginError = null
-})
+  authorizationStore.loginError = null;
+});
 
 async function login() {
-  const result = await authorizationStore.login(username.value, password.value)
-  if (result) {
-    goBack()
+  loginPhase.value = "checking";
+  authorizationStore.btnDisabled = true;
+
+  try {
+    await ensureInstanceRunning(EC2_INSTANCE_ID, {
+      onPhase: (p) => {
+        loginPhase.value = p;
+      },
+    });
+
+    loginPhase.value = "logging_in";
+    const result = await authorizationStore.login(username.value, password.value);
+    if (result) {
+      goBack();
+    }
+  } catch (err) {
+    const message =
+        err instanceof Error ? err.message : "Nie udało się uruchomić serwera.";
+    toast.add({
+      severity: "error",
+      summary: "Logowanie",
+      detail: message,
+      life: 5000,
+    });
+  } finally {
+    loginPhase.value = "idle";
+    authorizationStore.btnDisabled = false;
   }
 }
 
@@ -26,6 +63,7 @@ watch(
     () => authorizationStore.loginError,
     (newValue) => {
       if (newValue) {
+        console.log("watch",newValue);
         toast.add({
           severity: 'error',
           summary: 'Logowanie',
@@ -38,16 +76,18 @@ watch(
 )
 
 function goBack(): void {
-  let history: string[] | [] = JSON.parse(localStorage.getItem('navigationHistory') || '[]')
-  const lastAddress = history[history.length - 1]
-  if (lastAddress && (lastAddress === '/error' || lastAddress === '/login')) {
-    history = history.slice(-25)
-    history = history.filter((item) => item !== lastAddress) // Usuń ostatnią odwiedzoną stronę
-    localStorage.setItem('navigationHistory', JSON.stringify(history))
+  let history: string[] | [] = JSON.parse(
+      localStorage.getItem("navigationHistory") || "[]"
+  );
+  let lastAddress = history[history.length - 1];
+  if (lastAddress && (lastAddress === "/error" || lastAddress === "/login")) {
+    history = history.slice(-25);
+    history = history.filter((item) => item !== lastAddress); // Usuń ostatnią odwiedzoną stronę
+    localStorage.setItem("navigationHistory", JSON.stringify(history));
   }
 
-  if (history.length > 0) router.replace(history[history.length - 1])
-  else router.replace('/')
+  if (history.length > 0) router.replace(history[history.length - 1]);
+  else router.replace("/");
 }
 </script>
 <template>
@@ -79,6 +119,18 @@ function goBack(): void {
     >zaloguj
     </Button
     >
+
+    <!-- EC2 / login progress -->
+    <div
+        v-if="loginPhase !== 'idle'"
+        class="mt-2 mb-2 w-full"
+    >
+      <p class="text-sm text-surface-600 dark:text-surface-400 mb-1">
+        {{ phaseMessage[loginPhase] }}
+      </p>
+      <ProgressBar mode="indeterminate" class="w-full" />
+    </div>
+
     <p class="text-right mb-4">
       <router-link to="/forgot-password">Nie pamiętam hasła</router-link>
     </p>

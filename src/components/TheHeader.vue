@@ -2,6 +2,7 @@
 import { useAuthorizationStore } from '../stores/authorization'
 import ThemeSwitcher from './ThemeSwitcher.vue'
 import InstanceControl from "@/components/InstanceControl.vue";
+import { EC2_INSTANCE_ID, EC2_INSTANCE_NAME } from "@/config/ec2";
 
 const authStore = useAuthorizationStore()
 </script>
@@ -11,7 +12,7 @@ const authStore = useAuthorizationStore()
       <p class="pr-3 pt-2 text-primary text-4xl font-bold">SmartGaz</p>
     <div class="flex flex-col">
       <div class="flex justify-end items-center">
-        <InstanceControl :idInstance="'i-0c84ab8759cefd840'" :nameInstance="'Smartgaz'" />
+        <InstanceControl :idInstance="EC2_INSTANCE_ID" :nameInstance="EC2_INSTANCE_NAME" />
         <theme-switcher />
       </div>
       <p
