@@ -20,6 +20,7 @@ const phaseMessage: Record<EnsureInstanceRunningPhase, string> = {
   checking: "Sprawdzam serwer…",
   starting: "Uruchamiam serwer…",
   waiting: "Oczekiwanie na uruchomienie (może zająć 1–2 min)…",
+  waiting_app: "Czekam na gotowość aplikacji…",
 };
 
 onMounted(async () => {
@@ -29,19 +30,10 @@ onMounted(async () => {
       onPhase: (p) => {
         phase.value = p;
       },
+      waitForAppPing: async () => {
+        await authStore.testPing();
+      },
     });
-    try {
-      await authStore.testPing();
-    } catch {
-      toast.add({
-        severity: "warn",
-        summary: "Serwer jest włączony",
-        detail: "Nie można połączyć z aplikacją. Sprawdź połączenie internetowe.",
-        life: 6000,
-      });
-      router.replace({ name: "Home" });
-      return;
-    }
     const redirectTo = route.query.redirectTo as string | undefined;
     if (redirectTo) {
       router.replace(redirectTo);

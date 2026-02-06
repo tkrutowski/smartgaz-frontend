@@ -14,13 +14,14 @@ const { ensureInstanceRunning } = useEc2Control();
 const username = ref<string>("");
 const password = ref<string>("");
 
-type LoginPhase = "idle" | "checking" | "starting" | "waiting" | "logging_in";
+type LoginPhase = "idle" | "checking" | "starting" | "waiting" | "waiting_app" | "logging_in";
 const loginPhase = ref<LoginPhase>("idle");
 
 const phaseMessage: Record<Exclude<LoginPhase, "idle">, string> = {
   checking: "Sprawdzam serwer…",
   starting: "Uruchamiam serwer…",
   waiting: "Oczekiwanie na uruchomienie (może zająć 1–2 min)…",
+  waiting_app: "Czekam na gotowość aplikacji…",
   logging_in: "Logowanie…",
 };
 
@@ -36,6 +37,9 @@ async function login() {
     await ensureInstanceRunning(EC2_INSTANCE_ID, {
       onPhase: (p) => {
         loginPhase.value = p;
+      },
+      waitForAppPing: async () => {
+        await authorizationStore.testPing();
       },
     });
 
