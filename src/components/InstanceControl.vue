@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useEc2Control } from '@/composables/useEc2Control';
 import { useToast } from 'primevue/usetoast';
 import OfficeIconButton from "@/components/OfficeIconButton.vue";
+
+/** Odświeżanie statusu EC2 co N minut (AWS wyłącza po 15 min bezczynności). 20 min żeby zapytanie nie „budziło” EC2. */
+const STATUS_POLL_INTERVAL_MS = 20 * 60 * 1000;
 
 const props = defineProps<{
   idInstance: string;
@@ -95,7 +98,7 @@ const buttonTitle = computed(() => {
     return `Naciśnij aby uruchomić EC2 ${props.nameInstance}`;
   }
   // stopped lub null
-  return 'EC2 ${props.nameInstance}';
+  return `EC2 ${props.nameInstance}`;
 });
 
 const buttonIconColor = computed(() => {
@@ -112,8 +115,20 @@ const buttonIconColor = computed(() => {
   return 'text-orange-600 dark:text-orange-400';
 });
 
+let statusPollTimer: ReturnType<typeof setInterval> | null = null;
+
 onMounted(() => {
   fetchStatus();
+  statusPollTimer = setInterval(() => {
+    fetchStatus();
+  }, STATUS_POLL_INTERVAL_MS);
+});
+
+onUnmounted(() => {
+  if (statusPollTimer) {
+    clearInterval(statusPollTimer);
+    statusPollTimer = null;
+  }
 });
 
 // Po przekierowaniu (np. z Error503 po uruchomieniu EC2) odśwież ikonę
