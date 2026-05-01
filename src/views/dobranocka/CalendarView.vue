@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, nextTick, onBeforeUnmount, onMounted, ref} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import TheMenuDobranocka from "@/components/dobranocka/TheMenuDobranocka.vue";
 import moment from "moment";
 import "moment/dist/locale/pl"; // Import lokalizacji polskiej
@@ -87,7 +87,7 @@ function isWeekendOrHoliday(date: Date): boolean {
 }
 
 function isBedReserved(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.reservations.some((reservation: Reservation) => {
+  return reservationStore.calendarReservations.some((reservation: Reservation) => {
     if (!reservation.startDate || !reservation.endDate) {
       return false;
     }
@@ -105,21 +105,21 @@ function isBedReserved(bedToCheck: Bed, day: Date): boolean {
 }
 
 function isLastReservedDay(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.reservations.some((reservation: Reservation) =>
+  return reservationStore.calendarReservations.some((reservation: Reservation) =>
       reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed).some((b: Bed) => b.id === bedToCheck.id) &&
       new Date(reservation.endDate!).toDateString() === day.toDateString()
   );
 }
 
 function isFirstReservedDay(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.reservations.some((reservation: Reservation) =>
+  return reservationStore.calendarReservations.some((reservation: Reservation) =>
       reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed).some((b: Bed) => b.id === bedToCheck.id) &&
       new Date(reservation.startDate!).toDateString() === day.toDateString()
   );
 }
 
 function isSecondReservedDay(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.reservations.some((reservation: Reservation) =>
+  return reservationStore.calendarReservations.some((reservation: Reservation) =>
       reservation.beds
           .flatMap((resBed: ReservationBed) => resBed.bed)
           .some((b: Bed) => b.id === bedToCheck.id) &&
@@ -128,14 +128,14 @@ function isSecondReservedDay(bedToCheck: Bed, day: Date): boolean {
 }
 
 function getReservation(bed: Bed, date: Date): Reservation | undefined {
-  return reservationStore.reservations.find((reservation: Reservation) =>
+  return reservationStore.calendarReservations.find((reservation: Reservation) =>
       reservation.beds.some((resBed: ReservationBed) => resBed.bed.id === bed.id) &&
       moment(date).isBetween(moment(reservation.startDate), moment(reservation.endDate), 'day', '[]')
   );
 }
 
 function getReservationLength(bed: Bed, date: Date): number {
-  const reservation = reservationStore.reservations.find((reservation: Reservation) =>
+  const reservation = reservationStore.calendarReservations.find((reservation: Reservation) =>
       reservation.beds
           .flatMap((resBed: ReservationBed) => resBed.bed)
           .some((b: Bed) => b.id === bed.id) &&
@@ -166,7 +166,7 @@ function isContinuation(bed: Bed, date: Date): string {
   if (!currentReservation) {
     return "";
   }
-  const found = reservationStore.reservations.some(prevReservation =>
+  const found = reservationStore.calendarReservations.some(prevReservation =>
       prevReservation.customer?.id === currentReservation.customer?.id &&
       prevReservation.beds.length === currentReservation.beds.length &&
       moment(currentReservation.startDate).isSame(prevReservation.endDate)
@@ -174,12 +174,20 @@ function isContinuation(bed: Bed, date: Date): string {
   return found ? " - kontynuacja" : ""
 }
 
+const loadReservationsForSelectedDateRange = async () => {
+  const [startDate, endDate] = selectedDateRange.value;
+  if (!startDate || !endDate) {
+    return;
+  }
+  await reservationStore.refreshReservationsByDateRange(startDate, endDate);
+};
+
 //
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
 //
 onMounted(async () => {
   await roomStore.getRooms();
-  await reservationStore.refreshReservations()
+  await loadReservationsForSelectedDateRange();
   calculateTableHeight();
   window.addEventListener("resize", calculateTableHeight);
 
@@ -192,6 +200,23 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", calculateTableHeight);
 });
+
+watch(
+    selectedDateRange,
+    async (newRange, oldRange) => {
+      if (!newRange?.[0] || !newRange?.[1]) {
+        return;
+      }
+
+      const startChanged = !oldRange?.[0] || !moment(newRange[0]).isSame(oldRange[0], "day");
+      const endChanged = !oldRange?.[1] || !moment(newRange[1]).isSame(oldRange[1], "day");
+      if (!startChanged && !endChanged) {
+        return;
+      }
+
+      await loadReservationsForSelectedDateRange();
+    }
+);
 
 //display INFO
 const showReservationInfoDialog = ref<boolean>(false);
@@ -410,7 +435,7 @@ const submitExtend = async (checkout: Date) => {
           </p>
         </template>
       </Column>
-      <template v-for="(day) in dateRange" :key="day">
+      <template v-for="(day) in dateRange" :key="day.getTime()">
         <Column :header-class="getHeaderClass(day)" body-class="">
           <template #header>
             <div class="flex flex-col items-center justify-center w-full"

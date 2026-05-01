@@ -15,6 +15,8 @@ export const useReservationStore = defineStore('reservation', {
         rowsPerPage: parseInt(localStorage.getItem("rowsPerPageReservation") || "10", 10),
         loadingReservation: false,
         reservations: [] as Reservation[],
+        /** Rezerwacje widoczne w kalendarzu (zakres dat); nie nadpisuje pełnej listy `reservations`. */
+        calendarReservations: [] as Reservation[],
         selectedReservations: [] as Reservation[],
         beds: [] as Bed[]
     }),
@@ -34,6 +36,12 @@ export const useReservationStore = defineStore('reservation', {
         //
         async refreshReservations() {
             this.reservations = await this.getReservationsFromDb()
+        },
+        //
+        //REFRESH RESERVATIONS FOR DATE RANGE
+        //
+        async refreshReservationsByDateRange(start: Date, end: Date) {
+            this.calendarReservations = await this.getReservationsFromDbByDateRange(start, end)
         },
         //
         //GET RESERVATIONS
@@ -117,13 +125,28 @@ export const useReservationStore = defineStore('reservation', {
         //GET RESERVATIONS FROM DB
         //
         async getReservationsFromDb(): Promise<Reservation[]> {
-            console.log('START - getRoomsFromDb()')
+            console.log('START - getReservationsFromDb()')
             this.loadingReservation = true
 
             const response = await httpCommon.get(`/v1/dobranocka/reservation`)
             console.log('getReservationsFromDb() - Ilosc[]: ' + response.data.length)
             this.loadingReservation = false
             console.log('END - getReservationsFromDb()')
+            return response.data
+        },
+        //
+        //GET RESERVATIONS FROM DB BY DATE RANGE
+        //
+        async getReservationsFromDbByDateRange(start: Date, end: Date): Promise<Reservation[]> {
+            console.log('START - getReservationsFromDbByDateRange()', moment(start).format("YYYY-MM-DD"), moment(end).format("YYYY-MM-DD"))
+            this.loadingReservation = true
+
+            const response = await httpCommon.get(
+                `/v1/dobranocka/reservation/range?dateFrom=${moment(start).format("YYYY-MM-DD")}&dateTo=${moment(end).format("YYYY-MM-DD")}`
+            )
+            console.log('getReservationsFromDbByDateRange() - Ilosc[]: ' + response.data.length)
+            this.loadingReservation = false
+            console.log('END - getReservationsFromDbByDateRange()')
             return response.data
         },
         //
@@ -178,6 +201,8 @@ export const useReservationStore = defineStore('reservation', {
             await httpCommon.delete(`/v1/dobranocka/reservation/` + reservationId)
             const index = this.reservations.findIndex((r: Reservation) => r.id === reservationId)
             if (index !== -1) this.reservations.splice(index, 1)
+            const calIndex = this.calendarReservations.findIndex((r: Reservation) => r.id === reservationId)
+            if (calIndex !== -1) this.calendarReservations.splice(calIndex, 1)
             console.log('END - deleteReservationDb()')
         },
 
@@ -211,6 +236,8 @@ export const useReservationStore = defineStore('reservation', {
             const response = await httpCommon.put(`/v1/dobranocka/reservation`, payload)
             const index = this.reservations.findIndex((r: Reservation) => r.id === reservation.id)
             if (index !== -1) this.reservations.splice(index, 1, response.data)
+            const calIndex = this.calendarReservations.findIndex((r: Reservation) => r.id === reservation.id)
+            if (calIndex !== -1) this.calendarReservations.splice(calIndex, 1, response.data)
             console.log('END - updateReservationDb()')
         },
 
