@@ -19,7 +19,7 @@ const reservationStore = useReservationStore();
 const roomStore = useRoomStore();
 moment.locale("pl"); // Ustawienie lokalizacji na język polski
 
-const selectedDateRange = ref([moment().startOf('day').subtract(30, "days").toDate(), moment().add(90, "days").toDate()]);
+const selectedDateRange = ref([moment().startOf('day').subtract(14, "days").toDate(), moment().add(45, "days").toDate()]);
 
 const scrollHeight = ref("800px");
 
@@ -86,66 +86,86 @@ function isWeekendOrHoliday(date: Date): boolean {
   return isWeekend || isHoliday;
 }
 
-function isBedReserved(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.calendarReservations.some((reservation: Reservation) => {
+const dayKey = (day: Date | string) => moment(day).format("YYYY-MM-DD");
+const bedDayKey = (bedId: number, day: Date | string) => `${bedId}:${dayKey(day)}`;
+
+const reservationLengthById = computed(() => {
+  const lengths = new Map<number, number>();
+  for (const reservation of reservationStore.calendarReservations) {
+    const start = moment(reservation.startDate);
+    const end = moment(reservation.endDate);
+    lengths.set(reservation.id, Math.max(end.diff(start, "days") - 1, 1));
+  }
+  return lengths;
+});
+
+const reservationIndexes = computed(() => {
+  const byBedDay = new Map<string, Reservation>();
+  const firstDayByBed = new Set<string>();
+  const lastDayByBed = new Set<string>();
+  const secondDayByBed = new Set<string>();
+
+  for (const reservation of reservationStore.calendarReservations) {
     if (!reservation.startDate || !reservation.endDate) {
-      return false;
+      continue;
     }
 
-    const start = moment(reservation.startDate).toDate().getTime();
-    const end = moment(reservation.endDate).toDate().getTime();
-    const checkDay = moment(day).toDate().getTime();
-    return (
-        checkDay >= start &&
-        checkDay <= end &&
-        reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed)
-            .some((bed: Bed) => bed.id === bedToCheck.id)
-    );
-  });
+    const bedIds = reservation.beds.map((resBed: ReservationBed) => resBed.bed.id);
+    const start = moment(reservation.startDate).startOf("day");
+    const end = moment(reservation.endDate).startOf("day");
+    let current = start.clone();
+
+    while (current.isSameOrBefore(end, "day")) {
+      const currentDay = current.toDate();
+      for (const bedId of bedIds) {
+        byBedDay.set(bedDayKey(bedId, currentDay), reservation);
+      }
+      current.add(1, "day");
+    }
+
+    const startDay = start.toDate();
+    const endDay = end.toDate();
+    const secondDay = start.clone().add(1, "day").toDate();
+    for (const bedId of bedIds) {
+      firstDayByBed.add(bedDayKey(bedId, startDay));
+      lastDayByBed.add(bedDayKey(bedId, endDay));
+      secondDayByBed.add(bedDayKey(bedId, secondDay));
+    }
+  }
+
+  return {
+    byBedDay,
+    firstDayByBed,
+    lastDayByBed,
+    secondDayByBed
+  };
+});
+
+function isBedReserved(bedToCheck: Bed, day: Date): boolean {
+  return reservationIndexes.value.byBedDay.has(bedDayKey(bedToCheck.id, day));
 }
 
 function isLastReservedDay(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.calendarReservations.some((reservation: Reservation) =>
-      reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed).some((b: Bed) => b.id === bedToCheck.id) &&
-      new Date(reservation.endDate!).toDateString() === day.toDateString()
-  );
+  return reservationIndexes.value.lastDayByBed.has(bedDayKey(bedToCheck.id, day));
 }
 
 function isFirstReservedDay(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.calendarReservations.some((reservation: Reservation) =>
-      reservation.beds.flatMap((resBed: ReservationBed) => resBed.bed).some((b: Bed) => b.id === bedToCheck.id) &&
-      new Date(reservation.startDate!).toDateString() === day.toDateString()
-  );
+  return reservationIndexes.value.firstDayByBed.has(bedDayKey(bedToCheck.id, day));
 }
 
 function isSecondReservedDay(bedToCheck: Bed, day: Date): boolean {
-  return reservationStore.calendarReservations.some((reservation: Reservation) =>
-      reservation.beds
-          .flatMap((resBed: ReservationBed) => resBed.bed)
-          .some((b: Bed) => b.id === bedToCheck.id) &&
-      moment(reservation.startDate).add(1, 'days').isSame(moment(day), 'day')
-  );
+  return reservationIndexes.value.secondDayByBed.has(bedDayKey(bedToCheck.id, day));
 }
 
 function getReservation(bed: Bed, date: Date): Reservation | undefined {
-  return reservationStore.calendarReservations.find((reservation: Reservation) =>
-      reservation.beds.some((resBed: ReservationBed) => resBed.bed.id === bed.id) &&
-      moment(date).isBetween(moment(reservation.startDate), moment(reservation.endDate), 'day', '[]')
-  );
+  return reservationIndexes.value.byBedDay.get(bedDayKey(bed.id, date));
 }
 
 function getReservationLength(bed: Bed, date: Date): number {
-  const reservation = reservationStore.calendarReservations.find((reservation: Reservation) =>
-      reservation.beds
-          .flatMap((resBed: ReservationBed) => resBed.bed)
-          .some((b: Bed) => b.id === bed.id) &&
-      moment(date).isBetween(moment(reservation.startDate), moment(reservation.endDate), 'day', '[]')
-  );
+  const reservation = reservationIndexes.value.byBedDay.get(bedDayKey(bed.id, date));
   if (!reservation) return 1;
 
-  const start = moment(reservation.startDate);
-  const end = moment(reservation.endDate);
-  return end.diff(start, 'days') - 1;
+  return reservationLengthById.value.get(reservation.id) ?? 1;
 }
 
 //display current day in the table
@@ -186,8 +206,10 @@ const loadReservationsForSelectedDateRange = async () => {
 //-----------------------------------------------------MOUNTED-------------------------------------------------------
 //
 onMounted(async () => {
-  await roomStore.getRooms();
-  await loadReservationsForSelectedDateRange();
+  await Promise.all([
+    roomStore.getRooms(),
+    loadReservationsForSelectedDateRange()
+  ]);
   calculateTableHeight();
   window.addEventListener("resize", calculateTableHeight);
 
